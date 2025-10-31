@@ -192,7 +192,8 @@ class SteamManifestApp {
 
     const luaScript = this.scanner.generateLuaScript(gameData.appId, gameData.manifests);
 
-    const result = await window.electronAPI.saveManifests({
+    const { ipcRenderer } = require('electron');
+    const result = await ipcRenderer.invoke('save-manifests', {
       outputDir: this.outputDir,
       gameName: gameData.name,
       manifests: gameData.manifests,
