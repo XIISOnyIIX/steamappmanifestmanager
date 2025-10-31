@@ -204,30 +204,6 @@
     opacity: 0.3;
   }
 
-  /* Shine effect sweeping across cards */
-  .card-glass::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-      45deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.05) 50%,
-      transparent 70%
-    );
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-    opacity: 0;
-    pointer-events: none;
-    transition: none;
-  }
-
-  .card-glass:hover::after {
-    animation: cardShine 1.2s ease-in-out;
-  }
-
   /* Image container with parallax effect */
   .card-image-container {
     position: relative;
@@ -475,8 +451,37 @@
   }
 
   .collapse-glass.open .collapse-content {
-    max-height: 1000px;
+    max-height: min(400px, 50vh);
     opacity: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar styling for depot content */
+  .collapse-glass.open .collapse-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .collapse-glass.open .collapse-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+
+  .collapse-glass.open .collapse-content::-webkit-scrollbar-thumb {
+    background: rgba(102, 192, 244, 0.3);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+  }
+
+  .collapse-glass.open .collapse-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 192, 244, 0.5);
+  }
+
+  /* Firefox scrollbar styling */
+  .collapse-glass.open .collapse-content {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(102, 192, 244, 0.3) rgba(255, 255, 255, 0.05);
   }
 
   /* Depot item slide-in animation */
@@ -639,29 +644,6 @@
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
-}
-
-@keyframes shine {
-  0% { 
-    transform: translateX(-100%) translateY(-100%) rotate(45deg); 
-  }
-  100% { 
-    transform: translateX(100%) translateY(100%) rotate(45deg); 
-  }
-}
-
-@keyframes cardShine {
-  0% { 
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% { 
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-    opacity: 0;
-  }
 }
 
 @keyframes spin {
