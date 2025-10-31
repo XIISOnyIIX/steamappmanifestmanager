@@ -188,18 +188,18 @@ class GameCard {
       const collapseId = `collapse-${this.gameData.appId}`;
       return `
         <div class="collapse-glass">
-          <input type="checkbox" id="${collapseId}" class="hidden" />
+          <input type="checkbox" id="${collapseId}" class="depot-checkbox" />
           <label for="${collapseId}" class="collapse-header">
             <span class="font-medium text-cyan-400">Depot Details</span>
-            <svg class="w-5 h-5 transition-transform" id="chevron-${this.gameData.appId}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 transition-transform duration-300" id="chevron-${this.gameData.appId}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </label>
           
-          <div class="collapse-content hidden" id="content-${this.gameData.appId}">
-            <div class="space-y-2">
-              ${this.gameData.manifests.map(manifest => `
-                <div class="depot-item glass p-3 rounded-lg space-y-1">
+          <div class="collapse-content" id="content-${this.gameData.appId}">
+            <div class="space-y-2 p-4">
+              ${this.gameData.manifests.map((manifest, index) => `
+                <div class="depot-item glass p-3 rounded-lg space-y-1" style="animation-delay: ${0.1 + index * 0.1}s">
                   <div class="flex justify-between text-sm">
                     <span class="text-slate-400">Depot ID:</span>
                     <span class="font-mono text-cyan-400">${this.escapeHtml(String(manifest.depotId))}</span>
@@ -244,11 +244,14 @@ class GameCard {
         collapseCheckbox.addEventListener('change', (e) => {
           const content = card.querySelector(`#content-${this.gameData.appId}`);
           const chevron = card.querySelector(`#chevron-${this.gameData.appId}`);
-          if (content) {
-            content.classList.toggle('hidden', !e.target.checked);
-          }
-          if (chevron) {
-            chevron.style.transform = e.target.checked ? 'rotate(180deg)' : 'rotate(0deg)';
+          const collapseGlass = card.querySelector('.collapse-glass');
+          
+          if (e.target.checked) {
+            if (collapseGlass) collapseGlass.classList.add('open');
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+          } else {
+            if (collapseGlass) collapseGlass.classList.remove('open');
+            if (chevron) chevron.style.transform = 'rotate(0deg)';
           }
         });
       }

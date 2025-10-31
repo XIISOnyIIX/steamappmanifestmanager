@@ -363,15 +363,6 @@ class SteamManifestApp {
   }
 }
 
-// Mouse glow effect
-document.addEventListener('mousemove', (e) => {
-  const glow = document.getElementById('mouseGlow');
-  if (glow) {
-    glow.style.left = e.clientX + 'px';
-    glow.style.top = e.clientY + 'px';
-  }
-});
-
 // Scroll reveal animations
 const observeScrollAnimations = () => {
   const observer = new IntersectionObserver((entries) => {
