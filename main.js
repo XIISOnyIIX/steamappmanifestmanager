@@ -13,8 +13,8 @@ function createWindow() {
     minHeight: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
+      contextIsolation: false,
+      nodeIntegration: true,
     },
     backgroundColor: '#0f172a',
     titleBarStyle: 'default',
