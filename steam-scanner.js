@@ -244,6 +244,74 @@ class SteamScanner {
     }
   }
 
+  async findAllInstalledGames() {
+    try {
+      const installedGames = [];
+      
+      for (const libraryPath of this.libraryPaths) {
+        const steamappsPath = this.joinPath(libraryPath, 'steamapps');
+        const exists = await ipcRenderer.invoke('check-file-exists', steamappsPath);
+        
+        if (!exists) continue;
+
+        try {
+          const files = await ipcRenderer.invoke('read-dir', steamappsPath);
+          
+          if (!Array.isArray(files)) {
+            console.warn(`Invalid files list for ${steamappsPath}`);
+            continue;
+          }
+          
+          // Find all appmanifest_*.acf files
+          const manifestFiles = files.filter(f => 
+            f && typeof f === 'string' && f.startsWith('appmanifest_') && f.endsWith('.acf')
+          );
+          
+          // Extract APPID and check if installed
+          for (const file of manifestFiles) {
+            try {
+              const match = file.match(/^appmanifest_(\d+)\.acf$/);
+              if (!match) continue;
+              
+              const appId = match[1];
+              const acfPath = this.joinPath(steamappsPath, file);
+              
+              // Parse ACF to check if actually installed
+              const content = await ipcRenderer.invoke('read-file', acfPath);
+              const parsed = VDF.parse(content);
+              
+              if (parsed && parsed.AppState) {
+                const appState = parsed.AppState;
+                
+                // Check StateFlags to ensure game is fully installed
+                if (appState.StateFlags) {
+                  const stateFlags = parseInt(appState.StateFlags);
+                  // StateFlags & 4 means fully installed
+                  if (stateFlags & 4) {
+                    installedGames.push({
+                      appId: appId,
+                      name: appState.name || 'Unknown',
+                      libraryPath: libraryPath
+                    });
+                  }
+                }
+              }
+            } catch (fileError) {
+              console.warn(`Error processing manifest file ${file}: ${fileError.message}`);
+            }
+          }
+        } catch (error) {
+          console.warn(`Failed to scan steamapps at ${steamappsPath}: ${error.message}`);
+        }
+      }
+      
+      return installedGames;
+    } catch (error) {
+      console.error('Error finding installed games:', error);
+      throw new Error(`Failed to find installed games: ${error.message}`);
+    }
+  }
+
   joinPath(...parts) {
     if (this.platform === 'win32') {
       return parts.join('\\').replace(/\//g, '\\');
