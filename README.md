@@ -1,18 +1,20 @@
 # Steam Manifest Scanner
 
-A beautiful, modern Electron application for scanning Steam game manifests and generating Lua scripts. Built with Electron 30+, Node 18+, and TailwindCSS with Aceternity UI and Magic UI components.
+A beautiful, modern Electron application for scanning Steam game manifests and generating Lua scripts. Built with Electron 30+, Node 18+, DaisyUI, and TailwindCSS for a professional, polished interface.
 
 ## Features
 
 - 🎮 **APPID-Based Scanning**: Enter any Steam APPID to scan for manifests
-- 🎨 **Modern UI**: Clean interface with beautiful cards, animations, and loading states
-- 📦 **Multi-Game Support**: Scan multiple games, each displayed as a separate card
+- 🎨 **Modern DaisyUI Interface**: Professional, clean design with consistent components
+- 📦 **Multi-Game Support**: Scan multiple games, each displayed as a beautiful card
 - 🔍 **Smart Depot Detection**: Automatically finds depot IDs and manifest files
 - 🔐 **Decryption Keys**: Extracts and includes decryption keys from Steam config
-- 💾 **One-Click Export**: Save manifests and Lua scripts to organized folders
-- 📝 **Live Lua Preview**: View generated Lua scripts with syntax highlighting
+- 💾 **Flexible Saving**: Save manifests multiple times with "Save Again" functionality
+- 🗑️ **Card Management**: Remove cards from the list with confirmation dialogs
+- 📊 **Collapsible Details**: Depot information in clean tables inside card body
 - 🌍 **Cross-Platform**: Works on Windows, Linux, and macOS
 - ⚡ **Fast & Responsive**: Smooth animations and instant feedback
+- 🎯 **Toast Notifications**: Clear feedback for every action
 
 ## Screenshots
 
@@ -20,10 +22,15 @@ A beautiful, modern Electron application for scanning Steam game manifests and g
 Clean input section with APPID field, scan button, and output directory picker.
 
 ### Game Cards
-Beautiful cards displaying game information, header images, manifest counts, and depot details.
+Beautiful DaisyUI cards displaying:
+- Game header images
+- Manifest counts with badges
+- Collapsible depot details (properly positioned inside card body)
+- Save/Save Again buttons
+- Remove button with confirmation
 
-### Live Preview
-Real-time Lua script preview with syntax highlighting and copy-to-clipboard functionality.
+### No More Lua Preview Panel
+The bottom Lua preview panel has been removed. Lua scripts are saved directly to files.
 
 ## Installation
 
@@ -45,9 +52,9 @@ cd steam-manifest-scanner
 npm install
 ```
 
-3. Build Tailwind CSS:
+3. Build Tailwind CSS with DaisyUI:
 ```bash
-npx tailwindcss -i ./styles.css -o ./styles.css
+npx tailwindcss -i ./styles.css -o ./dist/styles.css
 ```
 
 4. Run the application:
@@ -73,16 +80,32 @@ npm start
      - Game name
      - APPID badge
      - Number of manifests found
-     - Depot details (expandable)
+     - "Show Depot Details" collapse button
+     - Save and Remove buttons
 
-4. **Save Manifests**
-   - Hover over a card to see the Lua preview
+4. **View Depot Details**
+   - Click "Show Depot Details" to expand
+   - See table with Depot IDs, Manifest IDs, and Decryption Keys
+   - Details properly positioned inside card body (below banner)
+   - Can collapse/expand without issues
+
+5. **Save Manifests**
    - Click "Save" to export manifests and Lua script
    - Files will be saved to: `{OutputDirectory}/{GameName}/`
+   - Button changes to "Save Again" after first save
+   - Can save multiple times (useful if changing output directory)
+   - Green "Saved" badge appears on card banner
+   - Shows "Last saved" timestamp
 
-5. **Scan More Games**
+6. **Remove Cards**
+   - Click "Remove" button (red trash icon)
+   - Confirmation modal appears
+   - Confirm to remove card from list
+   - Card fades out smoothly
+
+7. **Scan More Games**
    - Enter another APPID to add more cards
-   - Each game gets its own card
+   - Each game gets its own independent card
 
 ### Output Structure
 
@@ -158,17 +181,21 @@ steam-manifest-scanner/
 ├── package.json              # Dependencies and scripts
 ├── main.js                   # Electron main process
 ├── preload.js                # IPC context bridge
-├── renderer.js               # Main app logic
+├── renderer.js               # Main app logic and state
 ├── steam-scanner.js          # Steam file parsing
-├── index.html                # Main window
-├── styles.css                # Tailwind + custom styles
-├── tailwind.config.js        # Tailwind configuration
+├── index.html                # Main window with DaisyUI
+├── styles.css                # Source styles (custom animations)
+├── tailwind.config.js        # Tailwind + DaisyUI config
 ├── postcss.config.js         # PostCSS configuration
+├── dist/
+│   └── styles.css            # Built CSS with DaisyUI
 ├── components/
-│   ├── GameCard.js           # Game card component
-│   ├── InputSection.js       # Input and scan controls
-│   ├── CodePreview.js        # Lua preview panel
-│   └── Toast.js              # Toast notifications
+│   ├── GameCard.js           # Game card with DaisyUI components
+│   ├── InputSection.js       # Navbar input section
+│   ├── ConfirmModal.js       # Confirmation dialogs
+│   └── Toast.js              # Toast notifications (DaisyUI alerts)
+├── UI_OVERHAUL_SUMMARY.md    # Complete list of changes
+├── TESTING_GUIDE.md          # How to test the new UI
 └── README.md
 ```
 
@@ -176,6 +203,7 @@ steam-manifest-scanner/
 
 - **Electron 30+**: Desktop application framework
 - **Node.js 18+**: JavaScript runtime
+- **DaisyUI 4.x**: Professional Tailwind component library
 - **TailwindCSS 3.4**: Utility-first CSS framework
 - **VDF Parser**: Steam VDF file parsing
 - **Node Fetch**: HTTP requests to Steam API
@@ -259,12 +287,36 @@ Contributions are welcome! Please follow these guidelines:
 
 MIT License - See LICENSE file for details
 
+## Recent Updates
+
+### v2.0 - DaisyUI UI Overhaul (Latest)
+
+Complete UI redesign with professional component library:
+
+**What's New:**
+- ✨ **DaisyUI Integration**: Modern, consistent component library
+- 🔧 **Fixed Depot Details**: Now properly positioned inside card body (not under banner)
+- 🗑️ **Card Management**: Remove cards with confirmation dialogs
+- 💾 **Save Again**: Can save manifests multiple times
+- 🎯 **Better UX**: Toast notifications for all actions
+- 🚫 **Removed Lua Preview**: Bottom panel removed (Lua saved to files only)
+
+**Files Added:**
+- `components/ConfirmModal.js` - Confirmation dialogs
+- `UI_OVERHAUL_SUMMARY.md` - Complete change documentation
+- `TESTING_GUIDE.md` - Testing instructions
+
+**Files Removed:**
+- `components/CodePreview.js` - No longer needed
+
+See `UI_OVERHAUL_SUMMARY.md` for complete details.
+
 ## Acknowledgments
 
 - Steam API for game information
-- Aceternity UI for design inspiration
-- Magic UI for component patterns
+- DaisyUI for professional component library
 - TailwindCSS for styling utilities
+- Electron team for the framework
 
 ## Support
 
