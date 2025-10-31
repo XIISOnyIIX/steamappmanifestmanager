@@ -19,22 +19,22 @@ class InputSection {
         />
         <button 
           id="scanButton" 
-          class="btn btn-primary"
+          class="btn btn-primary magic-btn magic-shimmer"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
-          <span id="scanButtonText">Scan</span>
+          <span id="scanButtonText" class="relative z-10">Scan</span>
         </button>
         <button 
           id="outputDirButton" 
-          class="btn btn-secondary"
+          class="btn btn-secondary magic-btn magic-glow-btn"
           title="Select output directory"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
           </svg>
-          <span id="outputDirText">Output</span>
+          <span id="outputDirText" class="relative z-10">Output</span>
         </button>
       </div>
     `;
@@ -101,16 +101,16 @@ class InputSection {
     if (scanning) {
       scanButton.disabled = true;
       scanButton.innerHTML = `
-        <span class="loading loading-spinner"></span>
-        Scanning...
+        <span class="loading loading-spinner relative z-10"></span>
+        <span class="relative z-10">Scanning...</span>
       `;
     } else {
       scanButton.disabled = false;
       scanButton.innerHTML = `
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
-        Scan
+        <span class="relative z-10">Scan</span>
       `;
     }
   }

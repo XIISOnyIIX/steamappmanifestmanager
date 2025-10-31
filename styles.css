@@ -16,6 +16,223 @@
   .animate-slide-up {
     animation: slideUp 0.3s ease-out;
   }
+
+  /* ========== ACETERNITY UI CARD EFFECTS ========== */
+  .aceternity-card {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .aceternity-card::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(45deg, 
+      hsl(var(--p)) 0%, 
+      hsl(var(--s)) 25%, 
+      hsl(var(--a)) 50%, 
+      hsl(var(--s)) 75%, 
+      hsl(var(--p)) 100%);
+    background-size: 300% 300%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: -1;
+    animation: gradientRotate 3s ease infinite;
+  }
+
+  .aceternity-card:hover::before {
+    opacity: 0.6;
+  }
+
+  .aceternity-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 
+                0 0 40px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Aceternity 3D Tilt Effect */
+  .aceternity-card-3d {
+    perspective: 1000px;
+  }
+
+  .aceternity-card-3d:hover {
+    transform: rotateX(2deg) rotateY(-2deg) translateY(-8px);
+  }
+
+  /* Aceternity Glow Border */
+  .aceternity-glow-border {
+    position: relative;
+    overflow: visible;
+  }
+
+  .aceternity-glow-border::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      hsl(var(--p)) 50%, 
+      transparent 100%);
+    opacity: 0;
+    filter: blur(20px);
+    transition: opacity 0.5s ease;
+    z-index: -1;
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  .aceternity-glow-border:hover::after {
+    opacity: 0.7;
+  }
+
+  /* ========== MAGIC UI BUTTON EFFECTS ========== */
+  .magic-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .magic-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .magic-btn:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* Magic UI Shimmer Effect */
+  .magic-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .magic-shimmer::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 100%
+    );
+    transform: rotate(45deg);
+    animation: shimmerSlide 3s infinite;
+  }
+
+  .magic-shimmer:hover::after {
+    animation: shimmerSlide 1s infinite;
+  }
+
+  /* Magic UI Particle Button */
+  .magic-particle-btn {
+    position: relative;
+    background: linear-gradient(135deg, hsl(var(--p)), hsl(var(--s)));
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .magic-particle-btn:hover {
+    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6),
+                0 0 30px rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .magic-particle-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+  }
+
+  /* Magic UI Glow Button */
+  .magic-glow-btn {
+    position: relative;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .magic-glow-btn::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, hsl(var(--p)), hsl(var(--s)));
+    border-radius: inherit;
+    opacity: 0;
+    filter: blur(10px);
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+
+  .magic-glow-btn:hover {
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.6),
+                0 0 80px rgba(59, 130, 246, 0.4);
+  }
+
+  .magic-glow-btn:hover::before {
+    opacity: 1;
+  }
+
+  /* ========== ACETERNITY ANIMATED BACKGROUND ========== */
+  .aceternity-bg-grid {
+    background-image: 
+      linear-gradient(to right, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+  }
+
+  .aceternity-bg-dots {
+    background-image: radial-gradient(circle, rgba(59, 130, 246, 0.15) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: dotsMove 15s linear infinite;
+  }
+
+  /* ========== MAGIC UI LOADING SPINNER ========== */
+  .magic-spinner {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: conic-gradient(
+      transparent 0deg,
+      hsl(var(--p)) 90deg,
+      transparent 180deg
+    );
+    animation: magicSpin 1s linear infinite;
+  }
+
+  .magic-spinner::before {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border-radius: 50%;
+    background: hsl(var(--b1));
+  }
+
+  /* ========== COMBINED EFFECT: ACETERNITY CARD + MAGIC BUTTON ========== */
+  .aceternity-magic-card {
+    @apply aceternity-card aceternity-glow-border;
+  }
+
+  .aceternity-magic-card .magic-btn {
+    @apply magic-particle-btn;
+  }
 }
 
 @keyframes fadeIn {
@@ -48,6 +265,71 @@
   to {
     opacity: 0;
     transform: translateY(-20px);
+  }
+}
+
+@keyframes gradientRotate {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.3;
+    filter: blur(20px);
+  }
+  50% {
+    opacity: 0.7;
+    filter: blur(30px);
+  }
+}
+
+@keyframes shimmerSlide {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gridMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 40px;
+  }
+}
+
+@keyframes dotsMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 30px 30px;
+  }
+}
+
+@keyframes magicSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
 
