@@ -32,6 +32,7 @@ class SteamManifestApp {
     this.inputSection = null;
     this.scannedGames = new Map();
     this.outputDir = null;
+    this.scanCancelled = false;
   }
 
   async initialize() {
@@ -74,6 +75,14 @@ class SteamManifestApp {
         throw new Error('SteamScanner not loaded');
       }
 
+      // Initialize cancel scan button
+      const cancelBtn = document.getElementById('cancelScanBtn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          this.cancelScan();
+        });
+      }
+
       console.log('App initialized successfully');
     } catch (error) {
       console.error('Initialization error:', error);
@@ -82,6 +91,10 @@ class SteamManifestApp {
         toastManager.error(error.message);
       }
     }
+  }
+
+  cancelScan() {
+    this.scanCancelled = true;
   }
 
   setOutputDirectory(dir) {
@@ -128,6 +141,163 @@ class SteamManifestApp {
       this.replaceLoadingCardWithError(loadingCard, appId, error.message);
       toastManager.error(`Error scanning APPID ${appId}: ${error.message}`);
     }
+  }
+
+  async scanAllInstalledGames() {
+    this.scanCancelled = false;
+    
+    // Show loading overlay
+    this.showLoadingOverlay('Finding installed games...');
+
+    try {
+      // Find all installed games
+      const games = await this.scanner.findAllInstalledGames();
+      console.log(`Found ${games.length} installed games`);
+
+      if (games.length === 0) {
+        this.hideLoadingOverlay();
+        toastManager.warning('No installed Steam games found');
+        return;
+      }
+
+      // Update loading message
+      this.updateLoadingMessage(`Scanning ${games.length} games...`);
+      this.updateLoadingCount(0, games.length);
+
+      // Scan each game with rate limiting
+      let processed = 0;
+      let successful = 0;
+      let failed = 0;
+      const batchSize = 5; // Process 5 at a time to avoid overwhelming Steam API
+
+      for (let i = 0; i < games.length; i += batchSize) {
+        if (this.scanCancelled) {
+          this.hideLoadingOverlay();
+          toastManager.info(`Scan cancelled. Processed ${processed} of ${games.length} games.`);
+          return;
+        }
+
+        const batch = games.slice(i, i + batchSize);
+
+        // Process batch in parallel
+        await Promise.all(batch.map(async (game) => {
+          try {
+            // Skip if already scanned
+            if (!this.scannedGames.has(game.appId)) {
+              await this.scanGameByAppId(game.appId);
+              successful++;
+            }
+          } catch (error) {
+            console.error(`Failed to scan ${game.appId} (${game.name}):`, error);
+            failed++;
+          } finally {
+            processed++;
+            this.updateLoadingProgress(processed, games.length);
+            this.updateLoadingCount(processed, games.length);
+          }
+        }));
+
+        // Small delay between batches to respect rate limits
+        if (i + batchSize < games.length && !this.scanCancelled) {
+          await this.sleep(500);
+        }
+      }
+
+      this.hideLoadingOverlay();
+      toastManager.success(`Scan complete! Successfully scanned ${successful} games.${failed > 0 ? ` (${failed} failed)` : ''}`);
+
+    } catch (error) {
+      console.error('Failed to scan all games:', error);
+      this.hideLoadingOverlay();
+      toastManager.error(`Failed to scan installed games: ${error.message}`);
+    }
+  }
+
+  async scanGameByAppId(appId) {
+    try {
+      const gameInfo = await this.fetchGameInfo(appId);
+      
+      if (!gameInfo.success) {
+        throw new Error(gameInfo.error || 'Failed to fetch game information');
+      }
+
+      const manifests = await this.scanner.scanManifestsForAppId(appId);
+
+      const gameData = {
+        appId,
+        name: gameInfo.name,
+        headerImage: gameInfo.headerImage,
+        type: gameInfo.type,
+        manifests,
+      };
+
+      this.scannedGames.set(appId, gameData);
+      
+      // Create and add card immediately
+      const gameCard = new GameCard(
+        gameData,
+        (data) => this.saveGameManifests(data),
+        (id) => this.removeGame(id)
+      );
+      const newCard = gameCard.render();
+      
+      const container = document.getElementById('cardsGrid');
+      if (container && newCard) {
+        container.appendChild(newCard);
+      }
+
+      this.hideEmptyState();
+    } catch (error) {
+      console.error(`Error scanning APPID ${appId}:`, error);
+      throw error;
+    }
+  }
+
+  showLoadingOverlay(message) {
+    const overlay = document.getElementById('loadingOverlay');
+    const loadingTitle = document.getElementById('loadingTitle');
+    
+    if (overlay) {
+      overlay.classList.remove('hidden');
+    }
+    
+    if (loadingTitle) {
+      loadingTitle.textContent = message || 'Loading...';
+    }
+  }
+
+  hideLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+      overlay.classList.add('hidden');
+    }
+    this.scanCancelled = false;
+  }
+
+  updateLoadingMessage(message) {
+    const loadingMessage = document.getElementById('loadingMessage');
+    if (loadingMessage) {
+      loadingMessage.textContent = message;
+    }
+  }
+
+  updateLoadingProgress(current, total) {
+    const progress = document.getElementById('loadingProgress');
+    if (progress) {
+      const percentage = (current / total) * 100;
+      progress.style.width = `${percentage}%`;
+    }
+  }
+
+  updateLoadingCount(current, total) {
+    const loadingCount = document.getElementById('loadingCount');
+    if (loadingCount) {
+      loadingCount.textContent = `${current} / ${total} games`;
+    }
+  }
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   async fetchGameInfo(appId) {
@@ -400,6 +570,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM loaded, initializing app...');
     app = new SteamManifestApp();
     await app.initialize();
+    
+    // Expose app globally for InputSection
+    window.app = app;
     
     // Initialize scroll animations
     observeScrollAnimations();

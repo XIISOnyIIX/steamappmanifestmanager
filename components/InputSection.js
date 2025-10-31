@@ -14,6 +14,12 @@ class InputSection {
     }
 
     container.innerHTML = `
+      <label class="toggle-container">
+        <input type="checkbox" id="scanAllToggle" class="toggle-input" />
+        <span class="toggle-switch"></span>
+        <span class="toggle-label">Scan all installed</span>
+      </label>
+      
       <div class="input-wrapper glass relative">
         <input 
           type="number" 
@@ -45,8 +51,9 @@ class InputSection {
     const input = document.getElementById('appIdInput');
     const scanButton = document.getElementById('scanButton');
     const outputDirButton = document.getElementById('outputDirButton');
+    const scanAllToggle = document.getElementById('scanAllToggle');
 
-    if (!input || !scanButton || !outputDirButton) {
+    if (!input || !scanButton || !outputDirButton || !scanAllToggle) {
       console.error('Input section elements not found');
       return;
     }
@@ -66,36 +73,81 @@ class InputSection {
     outputDirButton.addEventListener('click', async () => {
       await this.selectOutputDirectory();
     });
+
+    scanAllToggle.addEventListener('change', (e) => {
+      this.handleToggleChange(e.target.checked);
+    });
+  }
+
+  handleToggleChange(scanAll) {
+    const input = document.getElementById('appIdInput');
+    const scanButtonText = document.getElementById('scanButtonText');
+    
+    if (!input || !scanButtonText) return;
+
+    if (scanAll) {
+      input.disabled = true;
+      input.placeholder = 'Scan all mode enabled';
+      input.style.opacity = '0.5';
+      scanButtonText.textContent = 'Scan All';
+    } else {
+      input.disabled = false;
+      input.placeholder = 'Enter APPID';
+      input.style.opacity = '1';
+      scanButtonText.textContent = 'Scan';
+    }
   }
 
   async handleScan() {
     const input = document.getElementById('appIdInput');
-    if (!input) return;
-
-    const appId = input.value.trim();
-
-    if (!appId) {
-      toastManager.warning('Please enter an APPID');
-      input.focus();
-      return;
-    }
-
-    const appIdNum = parseInt(appId);
-    if (isNaN(appIdNum) || appIdNum <= 0) {
-      toastManager.error('Please enter a valid positive APPID');
-      input.focus();
-      return;
-    }
-
-    this.setScanning(true);
+    const scanAllToggle = document.getElementById('scanAllToggle');
     
-    try {
-      await this.onScan(appIdNum);
-      input.value = '';
-    } catch (error) {
-      toastManager.error(error.message);
-    } finally {
-      this.setScanning(false);
+    if (!input || !scanAllToggle) return;
+
+    const scanAll = scanAllToggle.checked;
+
+    if (scanAll) {
+      // Scan all installed games
+      this.setScanning(true);
+      try {
+        // Call scan all method from app
+        if (window.app && window.app.scanAllInstalledGames) {
+          await window.app.scanAllInstalledGames();
+        } else {
+          throw new Error('Scan all functionality not available');
+        }
+      } catch (error) {
+        toastManager.error(error.message);
+      } finally {
+        this.setScanning(false);
+      }
+    } else {
+      // Scan single APPID (existing logic)
+      const appId = input.value.trim();
+
+      if (!appId) {
+        toastManager.warning('Please enter an APPID');
+        input.focus();
+        return;
+      }
+
+      const appIdNum = parseInt(appId);
+      if (isNaN(appIdNum) || appIdNum <= 0) {
+        toastManager.error('Please enter a valid positive APPID');
+        input.focus();
+        return;
+      }
+
+      this.setScanning(true);
+      
+      try {
+        await this.onScan(appIdNum);
+        input.value = '';
+      } catch (error) {
+        toastManager.error(error.message);
+      } finally {
+        this.setScanning(false);
+      }
     }
   }
 
@@ -103,19 +155,31 @@ class InputSection {
     this.isScanning = scanning;
     const scanButton = document.getElementById('scanButton');
     const input = document.getElementById('appIdInput');
+    const scanAllToggle = document.getElementById('scanAllToggle');
 
     if (!scanButton || !input) return;
 
     if (scanning) {
       scanButton.disabled = true;
       input.disabled = true;
+      if (scanAllToggle) scanAllToggle.disabled = true;
       scanButton.innerHTML = `
         <div class="spinner spinner-sm"></div>
         <span>Scanning...</span>
       `;
     } else {
       scanButton.disabled = false;
-      input.disabled = false;
+      if (scanAllToggle) {
+        scanAllToggle.disabled = false;
+        // Re-apply input state based on toggle
+        if (scanAllToggle.checked) {
+          input.disabled = true;
+        } else {
+          input.disabled = false;
+        }
+      } else {
+        input.disabled = false;
+      }
       scanButton.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
