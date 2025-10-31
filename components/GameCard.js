@@ -11,102 +11,110 @@ class GameCard {
   render() {
     try {
       const card = document.createElement('div');
-      // Aceternity UI animated card with glow effects
-      card.className = 'aceternity-card aceternity-glow-border card bg-base-100 shadow-xl transition-all duration-300 animate-fade-in';
+      card.className = 'card-glass group animate-fade-in';
       card.dataset.appId = this.gameData.appId;
 
       const manifestCount = this.gameData.manifests ? this.gameData.manifests.length : 0;
 
       card.innerHTML = `
-        <!-- Banner Image -->
-        ${this.gameData.headerImage ? `
-          <figure class="relative">
+        <!-- Header Image with overlay -->
+        <div class="relative overflow-hidden rounded-t-2xl">
+          ${this.gameData.headerImage ? `
             <img 
               src="${this.escapeHtml(this.gameData.headerImage)}" 
               alt="${this.escapeHtml(this.gameData.name)}"
               class="w-full h-48 object-cover"
-              onerror="this.parentElement.innerHTML='<div class=\\'w-full h-48 flex items-center justify-center bg-base-300\\'>Image not available</div>'"
+              onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center\\'>Image not available</div>'"
             />
-            ${this.saveCount > 0 ? `
-              <div class="absolute top-3 right-3">
-                <span class="badge badge-success gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Saved
-                </span>
-              </div>
-            ` : ''}
-          </figure>
-        ` : `
-          <div class="w-full h-48 bg-base-300 flex items-center justify-center">
-            <svg class="w-16 h-16 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            </svg>
-          </div>
-        `}
-        
-        <!-- Card Body (DaisyUI) -->
-        <div class="card-body">
-          <h2 class="card-title">
-            ${this.escapeHtml(this.gameData.name)}
-            <div class="badge badge-primary">APPID: ${this.gameData.appId}</div>
-          </h2>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+          ` : `
+            <div class="w-full h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+              <svg class="w-16 h-16 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+          `}
           
-          <p class="text-sm opacity-70">
-            ${manifestCount > 0 ? `${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} found` : 'No manifests found'}
-          </p>
-
+          <!-- Floating badges -->
+          <div class="absolute top-3 right-3 flex gap-2">
+            <span class="badge-glass-cyan">
+              APPID: ${this.gameData.appId}
+            </span>
+            ${this.saveCount > 0 ? `
+              <span class="badge-glass-success">
+                ✓ Saved
+              </span>
+            ` : ''}
+          </div>
+        </div>
+        
+        <!-- Card Content -->
+        <div class="p-6 space-y-4">
+          <!-- Game Title -->
+          <h3 class="text-2xl font-bold text-gradient-white-cyan">
+            ${this.escapeHtml(this.gameData.name)}
+          </h3>
+          
+          <!-- Manifest Count -->
+          <div class="flex items-center gap-2 text-sm text-slate-300">
+            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+            <span>${manifestCount > 0 ? `${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} found` : 'No manifests found'}</span>
+          </div>
+          
           ${manifestCount > 0 ? this.renderDepotDetails() : ''}
 
           ${this.lastSaved ? `
-            <div class="text-xs opacity-60 mt-2">
+            <div class="text-xs text-slate-500 mt-2">
               Last saved: ${new Date(this.lastSaved).toLocaleString()}
             </div>
           ` : ''}
 
-          <!-- Action Buttons (Magic UI styled) -->
-          <div class="card-actions justify-end mt-4 gap-2">
+          <!-- Action Buttons -->
+          <div class="flex gap-3 pt-4">
             ${manifestCount > 0 ? `
               <button 
                 id="saveBtn-${this.gameData.appId}"
-                class="btn btn-success magic-btn magic-shimmer gap-2"
+                class="flex-1 btn-glass-success flex items-center justify-center gap-2"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-                </svg>
-                <span class="relative z-10">${this.saveCount > 0 ? 'Save Again' : 'Save'}</span>
+                <span>💾</span>
+                <span>${this.saveCount > 0 ? 'Save Again' : 'Save'}</span>
               </button>
             ` : ''}
             <button 
               id="removeBtn-${this.gameData.appId}"
-              class="btn btn-error magic-btn magic-glow-btn gap-2"
+              class="btn-glass-danger flex items-center gap-2"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-              </svg>
-              <span class="relative z-10">Remove</span>
+              <span>🗑️</span>
             </button>
           </div>
         </div>
+        
+        <!-- Holographic shine effect (handled by CSS) -->
       `;
 
       this.attachEventListeners(card);
       return card;
     } catch (error) {
       console.error('Error rendering game card:', error);
-      toastManager.error(`Failed to create card: ${error.message}`);
+      if (toastManager && toastManager.error) {
+        toastManager.error(`Failed to create card: ${error.message}`);
+      }
       return this.renderErrorCard();
     }
   }
 
   renderErrorCard() {
     const card = document.createElement('div');
-    card.className = 'card bg-base-100 shadow-xl border-2 border-error';
+    card.className = 'glass-strong rounded-2xl p-6 border-2 border-red-500/50';
     card.innerHTML = `
-      <div class="card-body">
-        <h3 class="text-lg font-semibold text-error">Error Creating Card</h3>
-        <p class="text-sm opacity-70">Failed to render game card. Please try again.</p>
+      <div class="flex items-center gap-3">
+        <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+          <h3 class="text-lg font-semibold text-red-400">Error Creating Card</h3>
+          <p class="text-sm text-slate-400">Failed to render game card. Please try again.</p>
+        </div>
       </div>
     `;
     return card;
@@ -118,45 +126,44 @@ class GameCard {
     }
 
     try {
-      // DaisyUI collapse component for depot details
+      const collapseId = `collapse-${this.gameData.appId}`;
       return `
-        <div class="collapse collapse-arrow bg-base-200 mt-2">
-          <input type="checkbox" id="collapse-${this.gameData.appId}" /> 
-          <div class="collapse-title font-medium">
-            Show Depot Details
-          </div>
-          <div class="collapse-content"> 
-            <div class="overflow-x-auto">
-              <table class="table table-xs table-zebra">
-                <thead>
-                  <tr>
-                    <th>Depot ID</th>
-                    <th>Manifest ID</th>
-                    <th>Decryption Key</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${this.gameData.manifests.map(manifest => `
-                    <tr>
-                      <td class="font-mono text-xs">${this.escapeHtml(String(manifest.depotId))}</td>
-                      <td class="font-mono text-xs">${this.escapeHtml(String(manifest.manifestId))}</td>
-                      <td class="font-mono text-xs">
-                        ${manifest.decryptionKey ? 
-                          `<span class="text-success">${this.escapeHtml(manifest.decryptionKey.substring(0, 16))}...</span>` : 
-                          `<span class="text-warning">⚠ None</span>`
-                        }
-                      </td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
+        <div class="collapse-glass">
+          <input type="checkbox" id="${collapseId}" class="hidden" />
+          <label for="${collapseId}" class="collapse-header">
+            <span class="font-medium text-cyan-400">Depot Details</span>
+            <svg class="w-5 h-5 transition-transform" id="chevron-${this.gameData.appId}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </label>
+          
+          <div class="collapse-content hidden" id="content-${this.gameData.appId}">
+            <div class="space-y-2">
+              ${this.gameData.manifests.map(manifest => `
+                <div class="glass p-3 rounded-lg space-y-1">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-400">Depot ID:</span>
+                    <span class="font-mono text-cyan-400">${this.escapeHtml(String(manifest.depotId))}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-400">Manifest ID:</span>
+                    <span class="font-mono text-purple-400">${this.escapeHtml(String(manifest.manifestId))}</span>
+                  </div>
+                  <div class="text-xs text-slate-500 font-mono truncate">
+                    ${manifest.decryptionKey ? 
+                      `Key: ${this.escapeHtml(manifest.decryptionKey.substring(0, 32))}...` : 
+                      `<span class="text-yellow-400">⚠ No decryption key</span>`
+                    }
+                  </div>
+                </div>
+              `).join('')}
             </div>
           </div>
         </div>
       `;
     } catch (error) {
       console.error('Error rendering depot details:', error);
-      return '<p class="text-sm text-error">Error loading depot details</p>';
+      return '<p class="text-sm text-red-400">Error loading depot details</p>';
     }
   }
 
@@ -164,6 +171,7 @@ class GameCard {
     try {
       const saveBtn = card.querySelector(`#saveBtn-${this.gameData.appId}`);
       const removeBtn = card.querySelector(`#removeBtn-${this.gameData.appId}`);
+      const collapseCheckbox = card.querySelector(`#collapse-${this.gameData.appId}`);
 
       if (saveBtn) {
         saveBtn.addEventListener('click', () => this.handleSave(card));
@@ -171,6 +179,19 @@ class GameCard {
 
       if (removeBtn) {
         removeBtn.addEventListener('click', () => this.handleRemove(card));
+      }
+
+      if (collapseCheckbox) {
+        collapseCheckbox.addEventListener('change', (e) => {
+          const content = card.querySelector(`#content-${this.gameData.appId}`);
+          const chevron = card.querySelector(`#chevron-${this.gameData.appId}`);
+          if (content) {
+            content.classList.toggle('hidden', !e.target.checked);
+          }
+          if (chevron) {
+            chevron.style.transform = e.target.checked ? 'rotate(180deg)' : 'rotate(0deg)';
+          }
+        });
       }
     } catch (error) {
       console.error('Error attaching event listeners:', error);
@@ -192,8 +213,8 @@ class GameCard {
     
     try {
       saveBtn.innerHTML = `
-        <span class="loading loading-spinner"></span>
-        <span class="relative z-10">Saving...</span>
+        <div class="spinner spinner-sm"></div>
+        <span>Saving...</span>
       `;
       saveBtn.disabled = true;
 
@@ -202,62 +223,52 @@ class GameCard {
       this.lastSaved = new Date();
       
       saveBtn.innerHTML = `
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        <span class="relative z-10">Saved!</span>
+        <span>✓</span>
+        <span>Saved!</span>
       `;
       
       setTimeout(() => {
         if (saveBtn) {
           saveBtn.innerHTML = `
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-            </svg>
-            <span class="relative z-10">Save Again</span>
+            <span>💾</span>
+            <span>Save Again</span>
           `;
           saveBtn.disabled = false;
         }
       }, 2000);
 
-      // Add DaisyUI badge to show saved status
-      const badge = card.querySelector('.badge-success');
-      if (!badge) {
-        const figure = card.querySelector('figure');
-        if (figure) {
-          figure.classList.add('relative');
-          const badgeDiv = document.createElement('div');
-          badgeDiv.className = 'absolute top-3 right-3';
-          badgeDiv.innerHTML = `
-            <span class="badge badge-success gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              Saved
-            </span>
-          `;
-          figure.appendChild(badgeDiv);
-        }
+      // Add saved badge if not present
+      const badgesContainer = card.querySelector('.absolute.top-3.right-3');
+      if (badgesContainer && !card.querySelector('.badge-glass-success')) {
+        const savedBadge = document.createElement('span');
+        savedBadge.className = 'badge-glass-success';
+        savedBadge.textContent = '✓ Saved';
+        badgesContainer.appendChild(savedBadge);
       }
 
-      // Update last saved timestamp
-      const lastSavedDiv = card.querySelector('.card-body > .text-xs.opacity-60');
+      // Update or add last saved timestamp
+      const cardContent = card.querySelector('.p-6');
+      let lastSavedDiv = card.querySelector('.text-xs.text-slate-500');
       if (lastSavedDiv) {
         lastSavedDiv.textContent = `Last saved: ${new Date(this.lastSaved).toLocaleString()}`;
-      } else {
-        const cardActions = card.querySelector('.card-actions');
-        if (cardActions && cardActions.parentElement) {
-          const newDiv = document.createElement('div');
-          newDiv.className = 'text-xs opacity-60 mt-2';
-          newDiv.textContent = `Last saved: ${new Date(this.lastSaved).toLocaleString()}`;
-          cardActions.parentElement.insertBefore(newDiv, cardActions);
+      } else if (cardContent) {
+        lastSavedDiv = document.createElement('div');
+        lastSavedDiv.className = 'text-xs text-slate-500 mt-2';
+        lastSavedDiv.textContent = `Last saved: ${new Date(this.lastSaved).toLocaleString()}`;
+        const actionsDiv = card.querySelector('.flex.gap-3.pt-4');
+        if (actionsDiv) {
+          cardContent.insertBefore(lastSavedDiv, actionsDiv);
         }
       }
       
-      toastManager.success(`Successfully saved manifests for ${this.gameData.name}`);
+      if (toastManager && toastManager.success) {
+        toastManager.success(`Successfully saved manifests for ${this.gameData.name}`);
+      }
     } catch (error) {
       console.error('Save error:', error);
-      toastManager.error(`Failed to save: ${error.message}`);
+      if (toastManager && toastManager.error) {
+        toastManager.error(`Failed to save: ${error.message}`);
+      }
       if (saveBtn) {
         saveBtn.innerHTML = originalContent;
         saveBtn.disabled = false;
@@ -269,24 +280,38 @@ class GameCard {
 
   async handleRemove(card) {
     try {
-      const confirmed = await confirmModal.show(
-        'Remove Game?',
-        `This will remove ${this.gameData.name} from the list. Any saved files will remain.`
-      );
+      if (typeof confirmModal !== 'undefined') {
+        const confirmed = await confirmModal.show(
+          'Remove Game?',
+          `This will remove ${this.gameData.name} from the list. Any saved files will remain.`
+        );
 
-      if (confirmed) {
-        card.style.animation = 'fadeOut 0.3s ease-out';
-        setTimeout(() => {
+        if (confirmed) {
+          card.style.animation = 'fadeOut 0.3s ease-out';
+          setTimeout(() => {
+            card.remove();
+            if (this.onRemove) {
+              this.onRemove(this.gameData.appId);
+            }
+            if (toastManager && toastManager.success) {
+              toastManager.success(`Removed ${this.gameData.name} from list`);
+            }
+          }, 300);
+        }
+      } else {
+        // Fallback if confirmModal is not available
+        if (confirm(`Remove ${this.gameData.name} from the list?`)) {
           card.remove();
           if (this.onRemove) {
             this.onRemove(this.gameData.appId);
           }
-          toastManager.success(`Removed ${this.gameData.name} from list`);
-        }, 300);
+        }
       }
     } catch (error) {
       console.error('Remove error:', error);
-      toastManager.error(`Failed to remove card: ${error.message}`);
+      if (toastManager && toastManager.error) {
+        toastManager.error(`Failed to remove card: ${error.message}`);
+      }
     }
   }
 

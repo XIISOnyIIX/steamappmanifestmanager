@@ -5,30 +5,67 @@ class ConfirmModal {
   }
 
   initialize() {
+    const container = document.getElementById('modalContainer');
+    if (!container) {
+      console.warn('Modal container not found');
+      return;
+    }
+
+    container.innerHTML = `
+      <div id="confirmModal" class="modal-overlay hidden" onclick="if(event.target === this) confirmModal.close(false)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+          <h3 class="text-2xl font-bold mb-4 text-gradient-cyan-purple" id="modalTitle">Confirm Action</h3>
+          <p class="text-slate-300 mb-6" id="modalMessage"></p>
+          <div class="flex gap-3 justify-end">
+            <button class="btn-glass" id="modalCancel">Cancel</button>
+            <button class="btn-glass-danger" id="modalConfirm">Confirm</button>
+          </div>
+        </div>
+      </div>
+    `;
+
     this.modal = document.getElementById('confirmModal');
     const cancelBtn = document.getElementById('modalCancel');
     const confirmBtn = document.getElementById('modalConfirm');
 
-    cancelBtn.addEventListener('click', () => {
-      this.close(false);
-    });
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => {
+        this.close(false);
+      });
+    }
 
-    confirmBtn.addEventListener('click', () => {
-      this.close(true);
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        this.close(true);
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.modal && !this.modal.classList.contains('hidden')) {
+        this.close(false);
+      }
     });
   }
 
   show(title, message) {
     return new Promise((resolve) => {
       this.resolveCallback = resolve;
-      document.getElementById('modalTitle').textContent = title;
-      document.getElementById('modalMessage').textContent = message;
-      this.modal.showModal();
+      const titleEl = document.getElementById('modalTitle');
+      const messageEl = document.getElementById('modalMessage');
+      
+      if (titleEl) titleEl.textContent = title;
+      if (messageEl) messageEl.textContent = message;
+      
+      if (this.modal) {
+        this.modal.classList.remove('hidden');
+      }
     });
   }
 
   close(confirmed) {
-    this.modal.close();
+    if (this.modal) {
+      this.modal.classList.add('hidden');
+    }
     if (this.resolveCallback) {
       this.resolveCallback(confirmed);
       this.resolveCallback = null;

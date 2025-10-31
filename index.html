@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,67 +11,54 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="antialiased">
-  <div class="min-h-screen flex flex-col">
-    <!-- Top Navigation Bar -->
-    <div class="navbar bg-base-200 shadow-lg sticky top-0 z-50">
-      <div class="container mx-auto px-4">
-        <div class="flex-1">
-          <span class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Steam Manifest Scanner
-          </span>
-        </div>
-        <div id="inputSection" class="flex-none"></div>
-      </div>
-    </div>
-
-    <main class="flex-1 container mx-auto px-6 py-8 max-w-7xl">
-      <!-- Error Container -->
-      <div id="errorContainer" class="hidden mb-6">
-        <div class="alert alert-error shadow-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  <!-- Top Navigation Bar -->
+  <nav class="glass-strong fixed top-0 left-0 right-0 z-50 px-6 py-4">
+    <div class="flex items-center justify-between max-w-7xl mx-auto">
+      <!-- Logo/Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
-          <span id="errorMessage"></span>
         </div>
+        <span class="text-xl font-bold text-gradient-cyan-purple">
+          Steam Manifest Scanner
+        </span>
       </div>
+      
+      <!-- Input Section (rendered by JS) -->
+      <div id="inputSection" class="flex items-center gap-3"></div>
+    </div>
+  </nav>
 
-      <!-- Cards Grid -->
-      <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+  <!-- Main Content -->
+  <main class="container mx-auto px-6 py-24 max-w-7xl mt-4">
+    <!-- Empty State -->
+    <div id="emptyState" class="glass-strong rounded-2xl p-12 text-center">
+      <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
+        <svg class="w-12 h-12 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
       </div>
-
-      <!-- Empty State -->
-      <div id="emptyState" class="hero min-h-[60vh] bg-base-200 rounded-box">
-        <div class="hero-content text-center">
-          <div class="max-w-md">
-            <svg class="w-24 h-24 mx-auto mb-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <h1 class="text-4xl font-bold mb-4">No Games Scanned Yet</h1>
-            <p class="text-lg opacity-70">Enter an APPID above and click Scan to get started!</p>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+      <h2 class="text-3xl font-bold mb-3 text-gradient-cyan-purple">
+        Ready to Scan
+      </h2>
+      <p class="text-slate-400 max-w-md mx-auto">
+        Enter a Steam APPID above and click Scan to find manifests and generate Lua scripts
+      </p>
+    </div>
+    
+    <!-- Cards Grid -->
+    <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
+  </main>
 
   <!-- Toast Container -->
-  <div id="toastContainer" class="toast toast-end toast-bottom z-50"></div>
+  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 space-y-3"></div>
 
-  <!-- Confirmation Modal -->
-  <dialog id="confirmModal" class="modal">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg" id="modalTitle">Confirm Action</h3>
-      <p class="py-4" id="modalMessage"></p>
-      <div class="modal-action">
-        <button class="btn" id="modalCancel">Cancel</button>
-        <button class="btn btn-error" id="modalConfirm">Confirm</button>
-      </div>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-      <button>close</button>
-    </form>
-  </dialog>
+  <!-- Confirmation Modal Container -->
+  <div id="modalContainer"></div>
 
+  <!-- Scripts -->
   <script src="steam-scanner.js"></script>
   <script src="components/Toast.js"></script>
   <script src="components/InputSection.js"></script>
