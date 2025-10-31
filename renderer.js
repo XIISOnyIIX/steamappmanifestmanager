@@ -39,6 +39,9 @@ class SteamManifestApp {
     try {
       console.log('Initializing Steam Manifest App...');
       
+      // Ensure loading overlay is hidden on startup
+      this.hideLoadingOverlay();
+      
       // Initialize toast manager
       if (typeof toastManager !== 'undefined') {
         toastManager.initialize();
@@ -63,6 +66,9 @@ class SteamManifestApp {
         throw new Error('InputSection component not loaded');
       }
 
+      // Ensure UI is in default state (Single APPID mode)
+      this.setDefaultUIState();
+
       // Initialize Steam scanner
       if (typeof SteamScanner !== 'undefined') {
         this.scanner = new SteamScanner();
@@ -84,6 +90,9 @@ class SteamManifestApp {
       }
 
       console.log('App initialized successfully');
+      
+      // DO NOT call any scan functions here!
+      // User must click the scan button to start scanning
     } catch (error) {
       console.error('Initialization error:', error);
       this.showError(`Failed to initialize: ${error.message}`);
@@ -95,6 +104,28 @@ class SteamManifestApp {
 
   cancelScan() {
     this.scanCancelled = true;
+  }
+
+  setDefaultUIState() {
+    // Ensure toggle is unchecked (Single APPID mode by default)
+    const toggle = document.getElementById('scanAllToggle');
+    if (toggle) {
+      toggle.checked = false;
+    }
+    
+    // Ensure input is enabled and ready
+    const input = document.getElementById('appIdInput');
+    if (input) {
+      input.disabled = false;
+      input.placeholder = 'Enter APPID';
+      input.style.opacity = '1';
+    }
+    
+    // Ensure button text is correct
+    const scanButtonText = document.getElementById('scanButtonText');
+    if (scanButtonText) {
+      scanButtonText.textContent = 'Scan';
+    }
   }
 
   setOutputDirectory(dir) {

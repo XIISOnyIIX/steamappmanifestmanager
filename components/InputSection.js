@@ -85,6 +85,8 @@ class InputSection {
     
     if (!input || !scanButtonText) return;
 
+    // ONLY update UI state - DO NOT trigger any scanning!
+    // Scanning only happens when user clicks the Scan button
     if (scanAll) {
       input.disabled = true;
       input.placeholder = 'Scan all mode enabled';
@@ -99,6 +101,8 @@ class InputSection {
   }
 
   async handleScan() {
+    // THIS IS THE ONLY METHOD THAT SHOULD TRIGGER SCANNING
+    // Called when user clicks the Scan button or presses Enter
     const input = document.getElementById('appIdInput');
     const scanAllToggle = document.getElementById('scanAllToggle');
     
@@ -122,7 +126,7 @@ class InputSection {
         this.setScanning(false);
       }
     } else {
-      // Scan single APPID (existing logic)
+      // Scan single APPID mode
       const appId = input.value.trim();
 
       if (!appId) {
