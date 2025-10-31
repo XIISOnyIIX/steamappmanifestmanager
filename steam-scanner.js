@@ -1,4 +1,5 @@
 const VDF = require('vdf-parser');
+const { ipcRenderer } = require('electron');
 
 class SteamScanner {
   constructor() {
@@ -8,7 +9,7 @@ class SteamScanner {
   }
 
   async initialize() {
-    this.platform = await window.electronAPI.getPlatform();
+    this.platform = process.platform;
     await this.detectSteamPaths();
     await this.findLibraryFolders();
   }
@@ -17,7 +18,7 @@ class SteamScanner {
     const paths = this.getDefaultSteamPaths();
     
     for (const steamPath of paths) {
-      const exists = await window.electronAPI.checkFileExists(steamPath);
+      const exists = await ipcRenderer.invoke('check-file-exists', steamPath);
       if (exists) {
         this.steamPaths.push(steamPath);
       }
@@ -54,11 +55,11 @@ class SteamScanner {
       this.libraryPaths.push(steamPath);
 
       const vdfPath = this.joinPath(steamPath, 'steamapps', 'libraryfolders.vdf');
-      const exists = await window.electronAPI.checkFileExists(vdfPath);
+      const exists = await ipcRenderer.invoke('check-file-exists', vdfPath);
       
       if (exists) {
         try {
-          const content = await window.electronAPI.readFile(vdfPath);
+          const content = await ipcRenderer.invoke('read-file', vdfPath);
           const parsed = VDF.parse(content);
           
           if (parsed && parsed.libraryfolders) {
@@ -89,12 +90,12 @@ class SteamScanner {
 
     for (const libraryPath of this.libraryPaths) {
       const depotCachePath = this.joinPath(libraryPath, 'depotcache');
-      const exists = await window.electronAPI.checkFileExists(depotCachePath);
+      const exists = await ipcRenderer.invoke('check-file-exists', depotCachePath);
       
       if (!exists) continue;
 
       try {
-        const files = await window.electronAPI.readDir(depotCachePath);
+        const files = await ipcRenderer.invoke('read-dir', depotCachePath);
         
         for (const file of files) {
           if (file.endsWith('.manifest')) {
@@ -130,12 +131,12 @@ class SteamScanner {
 
     for (const libraryPath of this.libraryPaths) {
       const manifestPath = this.joinPath(libraryPath, 'steamapps', `appmanifest_${appId}.acf`);
-      const exists = await window.electronAPI.checkFileExists(manifestPath);
+      const exists = await ipcRenderer.invoke('check-file-exists', manifestPath);
       
       if (!exists) continue;
 
       try {
-        const content = await window.electronAPI.readFile(manifestPath);
+        const content = await ipcRenderer.invoke('read-file', manifestPath);
         const parsed = VDF.parse(content);
         
         if (parsed && parsed.AppState) {
@@ -178,12 +179,12 @@ class SteamScanner {
 
     for (const steamPath of this.steamPaths) {
       const configPath = this.joinPath(steamPath, 'config', 'config.vdf');
-      const exists = await window.electronAPI.checkFileExists(configPath);
+      const exists = await ipcRenderer.invoke('check-file-exists', configPath);
       
       if (!exists) continue;
 
       try {
-        const content = await window.electronAPI.readFile(configPath);
+        const content = await ipcRenderer.invoke('read-file', configPath);
         const parsed = VDF.parse(content);
         
         if (parsed && parsed.InstallConfigStore && parsed.InstallConfigStore.Software) {

@@ -145,7 +145,8 @@ class InputSection {
   }
 
   async selectOutputDirectory() {
-    const dir = await window.electronAPI.selectOutputDirectory();
+    const { ipcRenderer } = require('electron');
+    const dir = await ipcRenderer.invoke('select-output-directory');
     if (dir) {
       this.outputDir = dir;
       this.updateOutputDirDisplay();
