@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://store.steampowered.com;">
+  <title>Steam Manifest Scanner</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="antialiased">
+  <div class="min-h-screen flex flex-col">
+    <header class="border-b border-dark-700 bg-dark-900/50 backdrop-blur-sm sticky top-0 z-10">
+      <div class="container mx-auto px-6 py-4">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h1 class="text-3xl font-bold text-glow">Steam Manifest Scanner</h1>
+            <p class="text-gray-400 text-sm mt-1">Scan Steam manifests and generate Lua scripts</p>
+          </div>
+        </div>
+        
+        <div id="inputSection" class="space-y-4"></div>
+      </div>
+    </header>
+
+    <main class="flex-1 container mx-auto px-6 py-8">
+      <div id="errorContainer" class="hidden mb-6">
+        <div class="aceternity-card border-red-500/50 p-4">
+          <div class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+              <h3 class="font-semibold text-red-400">Error</h3>
+              <p id="errorMessage" class="text-gray-300 mt-1"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cardsContainer" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+      </div>
+
+      <div id="emptyState" class="text-center py-20">
+        <svg class="w-24 h-24 mx-auto text-dark-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h2 class="text-2xl font-semibold text-gray-400 mb-2">No games scanned yet</h2>
+        <p class="text-gray-500">Enter an APPID and click Scan to get started</p>
+      </div>
+    </main>
+
+    <footer id="codePreviewPanel" class="hidden border-t border-dark-700 bg-dark-900/50 backdrop-blur-sm">
+      <div class="container mx-auto px-6 py-4">
+        <div id="codePreview"></div>
+      </div>
+    </footer>
+  </div>
+
+  <div id="toastContainer" class="fixed bottom-4 right-4 space-y-2 z-50"></div>
+
+  <script src="steam-scanner.js"></script>
+  <script src="components/Toast.js"></script>
+  <script src="components/InputSection.js"></script>
+  <script src="components/GameCard.js"></script>
+  <script src="components/CodePreview.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
