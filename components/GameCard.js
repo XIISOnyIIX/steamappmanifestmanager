@@ -1,192 +1,217 @@
 class GameCard {
-  constructor(gameData, onSave, onHover) {
+  constructor(gameData, onSave, onRemove) {
     this.gameData = gameData;
     this.onSave = onSave;
-    this.onHover = onHover;
+    this.onRemove = onRemove;
     this.isSaving = false;
-    this.isSaved = false;
-    this.isExpanded = false;
+    this.saveCount = 0;
+    this.lastSaved = null;
   }
 
   render() {
     const card = document.createElement('div');
-    card.className = 'aceternity-card animate-fade-in';
+    card.className = 'card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 animate-fade-in';
     card.dataset.appId = this.gameData.appId;
 
-    const statusBadge = this.getStatusBadge();
     const manifestCount = this.gameData.manifests ? this.gameData.manifests.length : 0;
 
     card.innerHTML = `
-      <div class="relative">
-        ${this.gameData.headerImage ? `
-          <div class="w-full h-48 overflow-hidden bg-dark-900">
-            <img 
-              src="${this.gameData.headerImage}" 
-              alt="${this.gameData.name}"
-              class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-              onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-gray-600\\'>Image not available</div>'"
-            />
-          </div>
-        ` : `
-          <div class="w-full h-48 bg-dark-900 flex items-center justify-center">
-            <svg class="w-16 h-16 text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-            </svg>
-          </div>
-        `}
-        
-        <div class="absolute top-3 right-3">
-          ${statusBadge}
-        </div>
-      </div>
-
-      <div class="p-6 space-y-4">
-        <div>
-          <div class="flex items-start justify-between gap-2 mb-2">
-            <h3 class="text-xl font-bold text-gray-100 leading-tight">${this.gameData.name}</h3>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="badge-primary">APPID: ${this.gameData.appId}</span>
-            ${manifestCount > 0 ? `
-              <span class="badge-success">${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} found</span>
-            ` : `
-              <span class="badge-warning">No manifests found</span>
-            `}
-          </div>
-        </div>
-
-        ${manifestCount > 0 ? `
-          <div>
-            <button 
-              class="text-sm text-primary-400 hover:text-primary-300 transition-colors flex items-center gap-1"
-              onclick="document.getElementById('manifests-${this.gameData.appId}').classList.toggle('open'); this.querySelector('svg').classList.toggle('rotate-180')"
-            >
-              <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-              Show Depot Details
-            </button>
-            <div id="manifests-${this.gameData.appId}" class="collapsible-content mt-2 space-y-2">
-              ${this.renderManifestList()}
+      <!-- Banner Image -->
+      ${this.gameData.headerImage ? `
+        <figure class="relative">
+          <img 
+            src="${this.gameData.headerImage}" 
+            alt="${this.gameData.name}"
+            class="w-full h-48 object-cover"
+            onerror="this.parentElement.innerHTML='<div class=\\'w-full h-48 flex items-center justify-center bg-base-300\\'>Image not available</div>'"
+          />
+          ${this.saveCount > 0 ? `
+            <div class="absolute top-3 right-3">
+              <span class="badge badge-success gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Saved
+              </span>
             </div>
+          ` : ''}
+        </figure>
+      ` : `
+        <div class="w-full h-48 bg-base-300 flex items-center justify-center">
+          <svg class="w-16 h-16 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+      `}
+      
+      <!-- Card Body -->
+      <div class="card-body">
+        <h2 class="card-title">
+          ${this.gameData.name}
+          <div class="badge badge-primary">APPID: ${this.gameData.appId}</div>
+        </h2>
+        
+        <p class="text-sm opacity-70">
+          ${manifestCount > 0 ? `${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} found` : 'No manifests found'}
+        </p>
+
+        ${manifestCount > 0 ? this.renderDepotDetails() : ''}
+
+        ${this.lastSaved ? `
+          <div class="text-xs opacity-60 mt-2">
+            Last saved: ${new Date(this.lastSaved).toLocaleString()}
           </div>
         ` : ''}
 
-        <div class="flex gap-2">
-          <button 
-            id="saveBtn-${this.gameData.appId}"
-            class="magic-button-primary flex-1 ${manifestCount === 0 ? 'opacity-50 cursor-not-allowed' : ''}"
-            ${manifestCount === 0 ? 'disabled' : ''}
-          >
-            <span class="flex items-center justify-center gap-2">
+        <!-- Action Buttons -->
+        <div class="card-actions justify-end mt-4">
+          ${manifestCount > 0 ? `
+            <button 
+              id="saveBtn-${this.gameData.appId}"
+              class="btn btn-success gap-2"
+            >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
               </svg>
-              Save
-            </span>
-          </button>
-          
+              ${this.saveCount > 0 ? 'Save Again' : 'Save'}
+            </button>
+          ` : ''}
           <button 
-            class="magic-button-secondary"
-            onclick="this.closest('.aceternity-card').querySelector('.collapsible-content')?.classList.toggle('open')"
+            id="removeBtn-${this.gameData.appId}"
+            class="btn btn-error gap-2"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
             </svg>
+            Remove
           </button>
         </div>
       </div>
     `;
 
-    if (manifestCount > 0) {
-      const saveBtn = card.querySelector(`#saveBtn-${this.gameData.appId}`);
-      saveBtn.addEventListener('click', () => this.handleSave());
-
-      card.addEventListener('mouseenter', () => {
-        if (this.onHover) {
-          this.onHover(this.gameData);
-        }
-      });
-    }
-
+    this.attachEventListeners(card);
     return card;
   }
 
-  renderManifestList() {
+  renderDepotDetails() {
     if (!this.gameData.manifests || this.gameData.manifests.length === 0) {
       return '';
     }
 
-    return this.gameData.manifests.map(manifest => `
-      <div class="bg-dark-900 rounded p-3 text-xs space-y-1">
-        <div class="flex items-center gap-2">
-          <span class="text-gray-400">Depot ID:</span>
-          <span class="text-primary-300 font-mono">${manifest.depotId}</span>
+    return `
+      <div class="collapse collapse-arrow bg-base-200 mt-2">
+        <input type="checkbox" id="collapse-${this.gameData.appId}" /> 
+        <div class="collapse-title font-medium">
+          Show Depot Details
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-gray-400">Manifest ID:</span>
-          <span class="text-primary-300 font-mono">${manifest.manifestId}</span>
+        <div class="collapse-content"> 
+          <div class="overflow-x-auto">
+            <table class="table table-xs table-zebra">
+              <thead>
+                <tr>
+                  <th>Depot ID</th>
+                  <th>Manifest ID</th>
+                  <th>Decryption Key</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${this.gameData.manifests.map(manifest => `
+                  <tr>
+                    <td class="font-mono text-xs">${manifest.depotId}</td>
+                    <td class="font-mono text-xs">${manifest.manifestId}</td>
+                    <td class="font-mono text-xs">
+                      ${manifest.decryptionKey ? 
+                        `<span class="text-success">${manifest.decryptionKey.substring(0, 16)}...</span>` : 
+                        `<span class="text-warning">⚠ None</span>`
+                      }
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </div>
-        ${manifest.decryptionKey ? `
-          <div class="flex items-center gap-2">
-            <span class="text-gray-400">Decryption Key:</span>
-            <span class="text-green-300 font-mono text-[10px]">${manifest.decryptionKey.substring(0, 16)}...</span>
-          </div>
-        ` : `
-          <div class="flex items-center gap-2">
-            <span class="text-yellow-400 text-xs">⚠ No decryption key found</span>
-          </div>
-        `}
       </div>
-    `).join('');
+    `;
   }
 
-  getStatusBadge() {
-    if (this.gameData.error) {
-      return '<span class="badge-error">Error</span>';
+  attachEventListeners(card) {
+    const saveBtn = card.querySelector(`#saveBtn-${this.gameData.appId}`);
+    const removeBtn = card.querySelector(`#removeBtn-${this.gameData.appId}`);
+
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => this.handleSave(card));
     }
-    if (this.gameData.loading) {
-      return '<span class="badge-primary">Loading...</span>';
+
+    if (removeBtn) {
+      removeBtn.addEventListener('click', () => this.handleRemove(card));
     }
-    if (this.isSaved) {
-      return '<span class="badge-success">✓ Saved</span>';
-    }
-    return '';
   }
 
-  async handleSave() {
-    if (this.isSaving || this.isSaved) return;
+  async handleSave(card) {
+    if (this.isSaving) return;
 
     this.isSaving = true;
-    const saveBtn = document.querySelector(`#saveBtn-${this.gameData.appId}`);
+    const saveBtn = card.querySelector(`#saveBtn-${this.gameData.appId}`);
     const originalContent = saveBtn.innerHTML;
     
     saveBtn.innerHTML = `
-      <span class="flex items-center justify-center gap-2">
-        <div class="loading-spinner"></div>
-        Saving...
-      </span>
+      <span class="loading loading-spinner"></span>
+      Saving...
     `;
     saveBtn.disabled = true;
 
     try {
       await this.onSave(this.gameData);
-      this.isSaved = true;
+      this.saveCount++;
+      this.lastSaved = new Date();
       
       saveBtn.innerHTML = `
-        <span class="flex items-center justify-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-          </svg>
-          Saved
-        </span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Saved!
       `;
-      saveBtn.classList.remove('magic-button-primary');
-      saveBtn.classList.add('magic-button-success');
       
-      const card = saveBtn.closest('.aceternity-card');
-      const badge = card.querySelector('.absolute.top-3.right-3');
-      badge.innerHTML = '<span class="badge-success">✓ Saved</span>';
+      setTimeout(() => {
+        saveBtn.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+          </svg>
+          Save Again
+        `;
+        saveBtn.disabled = false;
+      }, 2000);
+
+      const badge = card.querySelector('.badge-success');
+      if (!badge) {
+        const figure = card.querySelector('figure');
+        if (figure) {
+          figure.classList.add('relative');
+          const badgeDiv = document.createElement('div');
+          badgeDiv.className = 'absolute top-3 right-3';
+          badgeDiv.innerHTML = `
+            <span class="badge badge-success gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Saved
+            </span>
+          `;
+          figure.appendChild(badgeDiv);
+        }
+      }
+
+      const lastSavedDiv = card.querySelector('.card-body > .text-xs.opacity-60');
+      if (lastSavedDiv) {
+        lastSavedDiv.textContent = `Last saved: ${new Date(this.lastSaved).toLocaleString()}`;
+      } else {
+        const cardActions = card.querySelector('.card-actions');
+        const newDiv = document.createElement('div');
+        newDiv.className = 'text-xs opacity-60 mt-2';
+        newDiv.textContent = `Last saved: ${new Date(this.lastSaved).toLocaleString()}`;
+        cardActions.parentElement.insertBefore(newDiv, cardActions);
+      }
       
       toastManager.success(`Successfully saved manifests for ${this.gameData.name}`);
     } catch (error) {
@@ -195,6 +220,24 @@ class GameCard {
       saveBtn.disabled = false;
     } finally {
       this.isSaving = false;
+    }
+  }
+
+  async handleRemove(card) {
+    const confirmed = await confirmModal.show(
+      'Remove Game?',
+      `This will remove ${this.gameData.name} from the list. Any saved files will remain.`
+    );
+
+    if (confirmed) {
+      card.style.animation = 'fadeOut 0.3s ease-out';
+      setTimeout(() => {
+        card.remove();
+        if (this.onRemove) {
+          this.onRemove(this.gameData.appId);
+        }
+        toastManager.success(`Removed ${this.gameData.name} from list`);
+      }, 300);
     }
   }
 }

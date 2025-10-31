@@ -2,13 +2,13 @@ class SteamManifestApp {
   constructor() {
     this.scanner = new SteamScanner();
     this.inputSection = null;
-    this.codePreview = new CodePreview();
     this.scannedGames = new Map();
     this.outputDir = null;
   }
 
   async initialize() {
     toastManager.initialize();
+    confirmModal.initialize();
     
     this.inputSection = new InputSection(
       (appId) => this.scanAppId(appId),
@@ -27,22 +27,6 @@ class SteamManifestApp {
 
   setOutputDirectory(dir) {
     this.outputDir = dir;
-    this.updateAllSaveButtons();
-  }
-
-  updateAllSaveButtons() {
-    const cards = document.querySelectorAll('.aceternity-card');
-    cards.forEach(card => {
-      const saveBtn = card.querySelector('[id^="saveBtn-"]');
-      if (saveBtn && !saveBtn.disabled) {
-        saveBtn.disabled = !this.outputDir;
-        if (this.outputDir) {
-          saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        } else {
-          saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        }
-      }
-    });
   }
 
   async scanAppId(appId) {
@@ -117,24 +101,20 @@ class SteamManifestApp {
   addLoadingCard(appId) {
     const container = document.getElementById('cardsContainer');
     const loadingCard = document.createElement('div');
-    loadingCard.className = 'aceternity-card animate-fade-in';
+    loadingCard.className = 'card bg-base-100 shadow-xl animate-fade-in';
     loadingCard.dataset.appId = appId;
     loadingCard.dataset.loading = 'true';
 
     loadingCard.innerHTML = `
-      <div class="p-6 space-y-4">
+      <div class="card-body">
         <div class="flex items-center gap-3">
-          <div class="loading-spinner"></div>
+          <span class="loading loading-spinner loading-lg text-primary"></span>
           <div>
-            <h3 class="text-lg font-semibold text-gray-100">Loading APPID ${appId}...</h3>
-            <p class="text-sm text-gray-400">Fetching game information and scanning manifests</p>
+            <h3 class="text-lg font-semibold">Loading APPID ${appId}...</h3>
+            <p class="text-sm opacity-70">Fetching game information and scanning manifests</p>
           </div>
         </div>
-        <div class="space-y-2">
-          <div class="h-2 bg-dark-700 rounded-full overflow-hidden">
-            <div class="h-full bg-primary-500 shimmer-effect"></div>
-          </div>
-        </div>
+        <progress class="progress progress-primary w-full"></progress>
       </div>
     `;
 
@@ -146,7 +126,7 @@ class SteamManifestApp {
     const gameCard = new GameCard(
       gameData,
       (data) => this.saveGameManifests(data),
-      (data) => this.codePreview.show(data)
+      (appId) => this.removeGame(appId)
     );
     const newCard = gameCard.render();
     loadingCard.replaceWith(newCard);
@@ -154,26 +134,28 @@ class SteamManifestApp {
 
   replaceLoadingCardWithError(loadingCard, appId, errorMessage) {
     const errorCard = document.createElement('div');
-    errorCard.className = 'aceternity-card border-red-500/50 animate-fade-in';
+    errorCard.className = 'card bg-base-100 shadow-xl border-2 border-error animate-fade-in';
     errorCard.dataset.appId = appId;
 
     errorCard.innerHTML = `
-      <div class="p-6 space-y-4">
+      <div class="card-body">
         <div class="flex items-start gap-3">
-          <svg class="w-6 h-6 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-6 h-6 text-error flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-red-400">Error Loading APPID ${appId}</h3>
-            <p class="text-gray-300 mt-1">${errorMessage}</p>
+            <h3 class="text-lg font-semibold text-error">Error Loading APPID ${appId}</h3>
+            <p class="mt-1 opacity-80">${errorMessage}</p>
           </div>
         </div>
-        <button 
-          class="magic-button-secondary w-full"
-          onclick="this.closest('.aceternity-card').remove(); if(document.getElementById('cardsContainer').children.length === 0) document.getElementById('emptyState').classList.remove('hidden');"
-        >
-          Remove
-        </button>
+        <div class="card-actions justify-end mt-4">
+          <button 
+            class="btn btn-error btn-sm"
+            onclick="this.closest('.card').remove(); if(document.getElementById('cardsContainer').children.length === 0) document.getElementById('emptyState').classList.remove('hidden');"
+          >
+            Remove
+          </button>
+        </div>
       </div>
     `;
 
@@ -208,10 +190,26 @@ class SteamManifestApp {
     return result;
   }
 
+  removeGame(appId) {
+    this.scannedGames.delete(appId);
+    
+    const container = document.getElementById('cardsContainer');
+    if (container.children.length === 0) {
+      this.showEmptyState();
+    }
+  }
+
   hideEmptyState() {
     const emptyState = document.getElementById('emptyState');
     if (emptyState) {
       emptyState.classList.add('hidden');
+    }
+  }
+
+  showEmptyState() {
+    const emptyState = document.getElementById('emptyState');
+    if (emptyState) {
+      emptyState.classList.remove('hidden');
     }
   }
 
