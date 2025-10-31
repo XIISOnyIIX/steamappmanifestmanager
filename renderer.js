@@ -1,6 +1,34 @@
+// Global error handlers to prevent crashes
+window.addEventListener('error', (event) => {
+  console.error('Global error caught:', event.error);
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'glass-strong rounded-xl p-4 mb-4 border-2 border-red-500/50';
+  errorDiv.innerHTML = `
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <div>
+        <p class="font-medium text-red-400">Critical Error</p>
+        <p class="text-sm text-slate-300">${event.message || 'Unknown error occurred'}</p>
+      </div>
+    </div>
+  `;
+  document.body.insertBefore(errorDiv, document.body.firstChild);
+  event.preventDefault();
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+  if (typeof toastManager !== 'undefined' && toastManager.error) {
+    toastManager.error('An error occurred: ' + (event.reason?.message || 'Unknown error'));
+  }
+  event.preventDefault();
+});
+
 class SteamManifestApp {
   constructor() {
-    this.scanner = new SteamScanner();
+    this.scanner = null;
     this.inputSection = null;
     this.scannedGames = new Map();
     this.outputDir = null;
@@ -8,21 +36,51 @@ class SteamManifestApp {
 
   async initialize() {
     try {
-      toastManager.initialize();
-      confirmModal.initialize();
+      console.log('Initializing Steam Manifest App...');
       
-      this.inputSection = new InputSection(
-        (appId) => this.scanAppId(appId),
-        (dir) => this.setOutputDirectory(dir)
-      );
-      this.inputSection.render();
+      // Initialize toast manager
+      if (typeof toastManager !== 'undefined') {
+        toastManager.initialize();
+        console.log('Toast manager initialized');
+      }
+      
+      // Initialize confirm modal
+      if (typeof confirmModal !== 'undefined') {
+        confirmModal.initialize();
+        console.log('Confirm modal initialized');
+      }
+      
+      // Initialize input section
+      if (typeof InputSection !== 'undefined') {
+        this.inputSection = new InputSection(
+          (appId) => this.scanAppId(appId),
+          (dir) => this.setOutputDirectory(dir)
+        );
+        this.inputSection.render();
+        console.log('Input section initialized');
+      } else {
+        throw new Error('InputSection component not loaded');
+      }
 
-      await this.scanner.initialize();
-      toastManager.success('Steam installation detected');
+      // Initialize Steam scanner
+      if (typeof SteamScanner !== 'undefined') {
+        this.scanner = new SteamScanner();
+        await this.scanner.initialize();
+        console.log('Steam scanner initialized');
+        if (toastManager && toastManager.success) {
+          toastManager.success('Steam installation detected');
+        }
+      } else {
+        throw new Error('SteamScanner not loaded');
+      }
+
+      console.log('App initialized successfully');
     } catch (error) {
       console.error('Initialization error:', error);
-      this.showError(`Failed to initialize Steam scanner: ${error.message}`);
-      toastManager.error(error.message);
+      this.showError(`Failed to initialize: ${error.message}`);
+      if (toastManager && toastManager.error) {
+        toastManager.error(error.message);
+      }
     }
   }
 
@@ -108,26 +166,23 @@ class SteamManifestApp {
 
   addLoadingCard(appId) {
     try {
-      const container = document.getElementById('cardsContainer');
+      const container = document.getElementById('cardsGrid');
       if (!container) {
         throw new Error('Cards container not found');
       }
 
       const loadingCard = document.createElement('div');
-      loadingCard.className = 'card bg-base-100 shadow-xl animate-fade-in';
+      loadingCard.className = 'glass-strong rounded-xl p-6 animate-fade-in';
       loadingCard.dataset.appId = appId;
       loadingCard.dataset.loading = 'true';
 
       loadingCard.innerHTML = `
-        <div class="card-body">
-          <div class="flex items-center gap-3">
-            <span class="loading loading-spinner loading-lg text-primary"></span>
-            <div>
-              <h3 class="text-lg font-semibold">Loading APPID ${appId}...</h3>
-              <p class="text-sm opacity-70">Fetching game information and scanning manifests</p>
-            </div>
+        <div class="flex items-center gap-4">
+          <div class="spinner"></div>
+          <div class="flex-1">
+            <p class="font-medium text-white">Scanning APPID ${appId}...</p>
+            <p class="text-sm text-slate-400">Fetching game data from Steam</p>
           </div>
-          <progress class="progress progress-primary w-full"></progress>
         </div>
       `;
 
@@ -170,28 +225,26 @@ class SteamManifestApp {
       if (!loadingCard) return;
 
       const errorCard = document.createElement('div');
-      errorCard.className = 'card bg-base-100 shadow-xl border-2 border-error animate-fade-in';
+      errorCard.className = 'glass-strong rounded-xl p-6 border-2 border-red-500/50 animate-fade-in';
       errorCard.dataset.appId = appId;
 
       errorCard.innerHTML = `
-        <div class="card-body">
-          <div class="flex items-start gap-3">
-            <svg class="w-6 h-6 text-error flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <div class="flex-1">
-              <h3 class="text-lg font-semibold text-error">Error Loading APPID ${appId}</h3>
-              <p class="mt-1 opacity-80">${this.escapeHtml(errorMessage)}</p>
-            </div>
+        <div class="flex items-start gap-3 mb-4">
+          <svg class="w-6 h-6 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-red-400">Error Loading APPID ${appId}</h3>
+            <p class="mt-1 text-slate-300">${this.escapeHtml(errorMessage)}</p>
           </div>
-          <div class="card-actions justify-end mt-4">
-            <button 
-              class="btn btn-error btn-sm"
-              onclick="this.closest('.card').remove(); if(document.getElementById('cardsContainer').children.length === 0) document.getElementById('emptyState').classList.remove('hidden');"
-            >
-              Remove
-            </button>
-          </div>
+        </div>
+        <div class="flex justify-end">
+          <button 
+            class="btn-glass-danger"
+            onclick="this.closest('.glass-strong').remove(); if(document.getElementById('cardsGrid').children.length === 0) { document.getElementById('emptyState').classList.remove('hidden'); document.getElementById('cardsGrid').classList.add('hidden'); }"
+          >
+            Remove
+          </button>
         </div>
       `;
 
@@ -243,7 +296,7 @@ class SteamManifestApp {
     try {
       this.scannedGames.delete(appId);
       
-      const container = document.getElementById('cardsContainer');
+      const container = document.getElementById('cardsGrid');
       if (container && container.children.length === 0) {
         this.showEmptyState();
       }
@@ -255,8 +308,12 @@ class SteamManifestApp {
   hideEmptyState() {
     try {
       const emptyState = document.getElementById('emptyState');
+      const cardsGrid = document.getElementById('cardsGrid');
       if (emptyState) {
         emptyState.classList.add('hidden');
+      }
+      if (cardsGrid) {
+        cardsGrid.classList.remove('hidden');
       }
     } catch (error) {
       console.error('Error hiding empty state:', error);
@@ -266,8 +323,12 @@ class SteamManifestApp {
   showEmptyState() {
     try {
       const emptyState = document.getElementById('emptyState');
+      const cardsGrid = document.getElementById('cardsGrid');
       if (emptyState) {
         emptyState.classList.remove('hidden');
+      }
+      if (cardsGrid) {
+        cardsGrid.classList.add('hidden');
       }
     } catch (error) {
       console.error('Error showing empty state:', error);
@@ -276,11 +337,19 @@ class SteamManifestApp {
 
   showError(message) {
     try {
-      const errorContainer = document.getElementById('errorContainer');
-      const errorMessage = document.getElementById('errorMessage');
-      if (errorContainer && errorMessage) {
-        errorContainer.classList.remove('hidden');
-        errorMessage.textContent = message;
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'glass-strong rounded-xl p-4 mb-4 border-2 border-red-500/50 mx-auto max-w-2xl';
+      errorDiv.innerHTML = `
+        <div class="flex items-center gap-3">
+          <svg class="w-6 h-6 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="text-slate-300">${this.escapeHtml(message)}</p>
+        </div>
+      `;
+      const main = document.querySelector('main');
+      if (main) {
+        main.insertBefore(errorDiv, main.firstChild);
       }
     } catch (error) {
       console.error('Error showing error message:', error);
@@ -294,30 +363,21 @@ class SteamManifestApp {
   }
 }
 
-// Global error handlers to prevent crashes
-window.addEventListener('error', (event) => {
-  console.error('Global error caught:', event.error);
-  if (typeof toastManager !== 'undefined') {
-    toastManager.error('An error occurred. Please try again.');
-  }
-  event.preventDefault();
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
-  if (typeof toastManager !== 'undefined') {
-    toastManager.error('An error occurred: ' + (event.reason?.message || 'Unknown error'));
-  }
-  event.preventDefault();
-});
-
+// Initialize app when DOM is ready
 let app;
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+    console.log('DOM loaded, initializing app...');
     app = new SteamManifestApp();
     await app.initialize();
   } catch (error) {
     console.error('Failed to initialize app:', error);
-    alert('Failed to initialize the application. Please restart the app.');
+    document.body.innerHTML += `
+      <div class="glass-strong rounded-xl p-6 m-6 border-2 border-red-500/50">
+        <h2 class="text-xl font-bold text-red-400 mb-2">Failed to Initialize</h2>
+        <p class="text-slate-300 mb-4">${error.message || 'Unknown error'}</p>
+        <p class="text-sm text-slate-400">Please check the console for more details or restart the application.</p>
+      </div>
+    `;
   }
 });
