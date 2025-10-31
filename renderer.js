@@ -177,12 +177,12 @@ class SteamManifestApp {
       loadingCard.dataset.loading = 'true';
 
       loadingCard.innerHTML = `
-        <div class="flex items-center gap-4">
-          <div class="spinner"></div>
-          <div class="flex-1">
-            <p class="font-medium text-white">Scanning APPID ${appId}...</p>
-            <p class="text-sm text-slate-400">Fetching game data from Steam</p>
-          </div>
+        <div class="skeleton-image shimmer"></div>
+        <div class="skeleton-text shimmer"></div>
+        <div class="skeleton-text shimmer short"></div>
+        <div class="flex items-center gap-2 mt-4">
+          <div class="spinner spinner-sm"></div>
+          <span class="text-sm" style="color: #c7d5e0;">Scanning APPID ${appId}...</span>
         </div>
       `;
 
@@ -363,6 +363,45 @@ class SteamManifestApp {
   }
 }
 
+// Mouse glow effect
+document.addEventListener('mousemove', (e) => {
+  const glow = document.getElementById('mouseGlow');
+  if (glow) {
+    glow.style.left = e.clientX + 'px';
+    glow.style.top = e.clientY + 'px';
+  }
+});
+
+// Scroll reveal animations
+const observeScrollAnimations = () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  // Observe all cards
+  document.querySelectorAll('.card-glass').forEach(card => {
+    card.classList.add('scroll-reveal');
+    observer.observe(card);
+  });
+};
+
+// Re-observe when new cards are added
+const originalAppendChild = Element.prototype.appendChild;
+Element.prototype.appendChild = function(child) {
+  const result = originalAppendChild.call(this, child);
+  if (child && child.classList && child.classList.contains('card-glass')) {
+    child.classList.add('scroll-reveal');
+    setTimeout(() => {
+      child.classList.add('visible');
+    }, 100);
+  }
+  return result;
+};
+
 // Initialize app when DOM is ready
 let app;
 document.addEventListener('DOMContentLoaded', async () => {
@@ -370,6 +409,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM loaded, initializing app...');
     app = new SteamManifestApp();
     await app.initialize();
+    
+    // Initialize scroll animations
+    observeScrollAnimations();
   } catch (error) {
     console.error('Failed to initialize app:', error);
     document.body.innerHTML += `
