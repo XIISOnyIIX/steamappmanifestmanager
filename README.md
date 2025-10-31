@@ -1,12 +1,22 @@
 # Steam Manifest Scanner
 
-A beautiful, modern Electron application for scanning Steam game manifests and generating Lua scripts. Built with Electron 30+, Node 18+, DaisyUI, and TailwindCSS for a professional, polished interface.
+A stunning, modern Electron application for scanning Steam game manifests and generating Lua scripts. Built with Electron 30+, Node 18+, and **three powerful UI libraries working in harmony**: **Aceternity UI** (animated cards), **Magic UI** (button effects), and **DaisyUI** (utility components).
+
+## ✨ Three Libraries, One Beautiful UI
+
+This application showcases the seamless integration of:
+
+1. **🌟 Aceternity UI** - Stunning 3D card animations with glow effects
+2. **✨ Magic UI** - Interactive buttons with shimmer and particle effects
+3. **🎨 DaisyUI** - Professional utility components (collapse, badges, modals)
 
 ## Features
 
 - 🎮 **APPID-Based Scanning**: Enter any Steam APPID to scan for manifests
-- 🎨 **Modern DaisyUI Interface**: Professional, clean design with consistent components
-- 📦 **Multi-Game Support**: Scan multiple games, each displayed as a beautiful card
+- 🌟 **Aceternity UI Cards**: Animated cards with 3D hover effects and glowing borders
+- ✨ **Magic UI Buttons**: Shimmer and glow effects on interactive elements
+- 🎨 **DaisyUI Components**: Professional collapse, badges, modals, and toasts
+- 📦 **Multi-Game Support**: Scan multiple games, each displayed as a stunning card
 - 🔍 **Smart Depot Detection**: Automatically finds depot IDs and manifest files
 - 🔐 **Decryption Keys**: Extracts and includes decryption keys from Steam config
 - 💾 **Flexible Saving**: Save manifests multiple times with "Save Again" functionality
@@ -15,6 +25,7 @@ A beautiful, modern Electron application for scanning Steam game manifests and g
 - 🌍 **Cross-Platform**: Works on Windows, Linux, and macOS
 - ⚡ **Fast & Responsive**: Smooth animations and instant feedback
 - 🎯 **Toast Notifications**: Clear feedback for every action
+- 🛡️ **Crash Prevention**: Comprehensive error handling prevents page disconnects
 
 ## Screenshots
 
@@ -52,7 +63,7 @@ cd steam-manifest-scanner
 npm install
 ```
 
-3. Build Tailwind CSS with DaisyUI:
+3. Build CSS (includes Aceternity UI, Magic UI, and DaisyUI):
 ```bash
 npx tailwindcss -i ./styles.css -o ./dist/styles.css
 ```
@@ -61,6 +72,30 @@ npx tailwindcss -i ./styles.css -o ./dist/styles.css
 ```bash
 npm start
 ```
+
+## UI Library Architecture
+
+This application demonstrates how three different UI libraries can work together harmoniously:
+
+### 🌟 Aceternity UI - Card Animations
+- **Purpose**: Stunning visual effects for card containers
+- **Effects**: 3D transforms, glowing borders, gradient animations
+- **Classes**: `.aceternity-card`, `.aceternity-glow-border`
+- **Used in**: Game cards, loading states
+
+### ✨ Magic UI - Button Effects  
+- **Purpose**: Interactive button animations
+- **Effects**: Shimmer sweeps, ripple effects, particle backgrounds
+- **Classes**: `.magic-btn`, `.magic-shimmer`, `.magic-glow-btn`
+- **Used in**: Save buttons, remove buttons, scan button
+
+### 🎨 DaisyUI - Utility Components
+- **Purpose**: Professional, accessible UI components
+- **Components**: collapse, badges, modals, toasts, tables
+- **Theme**: Dark mode by default
+- **Used in**: Depot details, status badges, confirmations
+
+**See [THREE_LIBRARIES_INTEGRATION.md](./THREE_LIBRARIES_INTEGRATION.md) for detailed documentation on how these libraries work together.**
 
 ## Usage
 

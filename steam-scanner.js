@@ -79,51 +79,65 @@ class SteamScanner {
   }
 
   async scanManifestsForAppId(appId) {
-    const manifests = [];
-    const depotIds = await this.getDepotIdsForAppId(appId);
-    
-    if (depotIds.length === 0) {
-      console.warn(`No depot IDs found for APPID ${appId}`);
-    }
-
-    const decryptionKeys = await this.getDecryptionKeys();
-
-    for (const libraryPath of this.libraryPaths) {
-      const depotCachePath = this.joinPath(libraryPath, 'depotcache');
-      const exists = await ipcRenderer.invoke('check-file-exists', depotCachePath);
+    try {
+      const manifests = [];
+      const depotIds = await this.getDepotIdsForAppId(appId);
       
-      if (!exists) continue;
+      if (depotIds.length === 0) {
+        console.warn(`No depot IDs found for APPID ${appId}`);
+      }
 
-      try {
-        const files = await ipcRenderer.invoke('read-dir', depotCachePath);
+      const decryptionKeys = await this.getDecryptionKeys();
+
+      for (const libraryPath of this.libraryPaths) {
+        const depotCachePath = this.joinPath(libraryPath, 'depotcache');
+        const exists = await ipcRenderer.invoke('check-file-exists', depotCachePath);
         
-        for (const file of files) {
-          if (file.endsWith('.manifest')) {
-            const match = file.match(/^(\d+)_(\d+)\.manifest$/);
-            if (match) {
-              const depotId = match[1];
-              const manifestId = match[2];
-              
-              if (depotIds.includes(depotId)) {
-                const fullPath = this.joinPath(depotCachePath, file);
-                manifests.push({
-                  file,
-                  depotId,
-                  manifestId,
-                  decryptionKey: decryptionKeys[depotId] || null,
-                  type: 'Base',
-                  fullPath,
-                });
+        if (!exists) continue;
+
+        try {
+          const files = await ipcRenderer.invoke('read-dir', depotCachePath);
+          
+          if (!Array.isArray(files)) {
+            console.warn(`Invalid files list for ${depotCachePath}`);
+            continue;
+          }
+          
+          for (const file of files) {
+            try {
+              if (file && typeof file === 'string' && file.endsWith('.manifest')) {
+                const match = file.match(/^(\d+)_(\d+)\.manifest$/);
+                if (match) {
+                  const depotId = match[1];
+                  const manifestId = match[2];
+                  
+                  if (depotIds.includes(depotId)) {
+                    const fullPath = this.joinPath(depotCachePath, file);
+                    manifests.push({
+                      file,
+                      depotId,
+                      manifestId,
+                      decryptionKey: decryptionKeys[depotId] || null,
+                      type: 'Base',
+                      fullPath,
+                    });
+                  }
+                }
               }
+            } catch (fileError) {
+              console.warn(`Error processing file ${file}: ${fileError.message}`);
             }
           }
+        } catch (error) {
+          console.warn(`Failed to scan depotcache at ${depotCachePath}: ${error.message}`);
         }
-      } catch (error) {
-        console.warn(`Failed to scan depotcache at ${depotCachePath}: ${error.message}`);
       }
-    }
 
-    return manifests;
+      return manifests;
+    } catch (error) {
+      console.error('Error scanning manifests:', error);
+      throw new Error(`Failed to scan manifests: ${error.message}`);
+    }
   }
 
   async getDepotIdsForAppId(appId) {
@@ -207,16 +221,27 @@ class SteamScanner {
   }
 
   generateLuaScript(appId, manifests) {
-    let script = `addappid(${appId})\n`;
-    
-    for (const manifest of manifests) {
-      script += `setManifestid(${appId},"${manifest.manifestId}")\n`;
-      if (manifest.decryptionKey) {
-        script += `setDecryptionKey(${appId},"${manifest.decryptionKey}")\n`;
+    try {
+      if (!appId || !manifests || !Array.isArray(manifests)) {
+        throw new Error('Invalid parameters for Lua script generation');
       }
-    }
 
-    return script;
+      let script = `addappid(${appId})\n`;
+      
+      for (const manifest of manifests) {
+        if (manifest && manifest.manifestId) {
+          script += `setManifestid(${appId},"${manifest.manifestId}")\n`;
+          if (manifest.decryptionKey) {
+            script += `setDecryptionKey(${appId},"${manifest.decryptionKey}")\n`;
+          }
+        }
+      }
+
+      return script;
+    } catch (error) {
+      console.error('Error generating Lua script:', error);
+      throw new Error(`Failed to generate Lua script: ${error.message}`);
+    }
   }
 
   joinPath(...parts) {
