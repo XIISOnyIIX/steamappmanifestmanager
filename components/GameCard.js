@@ -136,8 +136,6 @@ class GameCard {
             </button>
           </div>
         </div>
-        
-        <!-- Holographic shine effect (handled by CSS) -->
       `;
 
       this.attachEventListeners(card);
