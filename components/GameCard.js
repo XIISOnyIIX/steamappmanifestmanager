@@ -8,6 +8,54 @@ class GameCard {
     this.lastSaved = null;
   }
 
+  animateCount(element, start, end, duration = 600) {
+    let startTime = null;
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const current = Math.floor(progress * (end - start) + start);
+      element.textContent = `${current} manifest${current !== 1 ? 's' : ''} found`;
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }
+
+  createConfetti(button) {
+    const colors = ['#66c0f4', '#8bc53f', '#c7d5e0'];
+    const confettiCount = 15;
+    
+    for (let i = 0; i < confettiCount; i++) {
+      const confetti = document.createElement('div');
+      confetti.style.position = 'absolute';
+      confetti.style.width = '6px';
+      confetti.style.height = '6px';
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.borderRadius = '50%';
+      confetti.style.left = '50%';
+      confetti.style.top = '50%';
+      confetti.style.pointerEvents = 'none';
+      confetti.style.zIndex = '1000';
+      
+      button.style.position = 'relative';
+      button.appendChild(confetti);
+      
+      const angle = (Math.PI * 2 * i) / confettiCount;
+      const velocity = 50 + Math.random() * 50;
+      const tx = Math.cos(angle) * velocity;
+      const ty = Math.sin(angle) * velocity;
+      
+      confetti.animate([
+        { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+        { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+      ], {
+        duration: 600,
+        easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+      }).onfinish = () => confetti.remove();
+    }
+  }
+
   render() {
     try {
       const card = document.createElement('div');
@@ -18,15 +66,15 @@ class GameCard {
 
       card.innerHTML = `
         <!-- Header Image with overlay -->
-        <div class="relative overflow-hidden rounded-t-2xl">
+        <div class="card-image-container relative overflow-hidden rounded-t-2xl">
           ${this.gameData.headerImage ? `
             <img 
               src="${this.escapeHtml(this.gameData.headerImage)}" 
               alt="${this.escapeHtml(this.gameData.name)}"
-              class="w-full h-48 object-cover"
+              class="card-image w-full h-48 object-cover"
               onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center\\'>Image not available</div>'"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
           ` : `
             <div class="w-full h-48 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
               <svg class="w-16 h-16 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,7 +84,7 @@ class GameCard {
           `}
           
           <!-- Floating badges -->
-          <div class="absolute top-3 right-3 flex gap-2">
+          <div class="absolute top-3 right-3 flex gap-2 z-10">
             <span class="badge-glass-cyan">
               APPID: ${this.gameData.appId}
             </span>
@@ -57,8 +105,8 @@ class GameCard {
           
           <!-- Manifest Count -->
           <div class="flex items-center gap-2 text-sm text-slate-300">
-            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
-            <span>${manifestCount > 0 ? `${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} found` : 'No manifests found'}</span>
+            <div class="w-2 h-2 rounded-full animate-pulse" style="background-color: #66c0f4;"></div>
+            <span id="count-${this.gameData.appId}">${manifestCount > 0 ? `${manifestCount} manifest${manifestCount !== 1 ? 's' : ''} found` : 'No manifests found'}</span>
           </div>
           
           ${manifestCount > 0 ? this.renderDepotDetails() : ''}
@@ -93,6 +141,17 @@ class GameCard {
       `;
 
       this.attachEventListeners(card);
+      
+      // Animate manifest count
+      if (manifestCount > 0) {
+        setTimeout(() => {
+          const countElement = card.querySelector(`#count-${this.gameData.appId}`);
+          if (countElement) {
+            this.animateCount(countElement, 0, manifestCount);
+          }
+        }, 100);
+      }
+      
       return card;
     } catch (error) {
       console.error('Error rendering game card:', error);
@@ -140,7 +199,7 @@ class GameCard {
           <div class="collapse-content hidden" id="content-${this.gameData.appId}">
             <div class="space-y-2">
               ${this.gameData.manifests.map(manifest => `
-                <div class="glass p-3 rounded-lg space-y-1">
+                <div class="depot-item glass p-3 rounded-lg space-y-1">
                   <div class="flex justify-between text-sm">
                     <span class="text-slate-400">Depot ID:</span>
                     <span class="font-mono text-cyan-400">${this.escapeHtml(String(manifest.depotId))}</span>
@@ -226,6 +285,10 @@ class GameCard {
         <span>✓</span>
         <span>Saved!</span>
       `;
+      saveBtn.classList.add('success');
+      
+      // Create confetti effect
+      this.createConfetti(saveBtn);
       
       setTimeout(() => {
         if (saveBtn) {
@@ -233,6 +296,7 @@ class GameCard {
             <span>💾</span>
             <span>Save Again</span>
           `;
+          saveBtn.classList.remove('success');
           saveBtn.disabled = false;
         }
       }, 2000);

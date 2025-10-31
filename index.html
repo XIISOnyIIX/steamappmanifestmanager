@@ -11,12 +11,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="antialiased">
+  <!-- Mouse Glow Effect -->
+  <div id="mouseGlow"></div>
+  
+  <!-- Floating Particles Background -->
+  <div class="particles">
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+  </div>
+  
   <!-- Top Navigation Bar -->
   <nav class="glass-strong fixed top-0 left-0 right-0 z-50 px-6 py-4">
     <div class="flex items-center justify-between max-w-7xl mx-auto">
       <!-- Logo/Title -->
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br flex items-center justify-center" style="background: linear-gradient(135deg, #66c0f4, #8bc53f);">
           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
@@ -35,15 +47,15 @@
   <main class="container mx-auto px-6 py-24 max-w-7xl mt-4">
     <!-- Empty State -->
     <div id="emptyState" class="glass-strong rounded-2xl p-12 text-center">
-      <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
-        <svg class="w-12 h-12 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, rgba(102, 192, 244, 0.2), rgba(139, 197, 63, 0.2));">
+        <svg class="w-12 h-12" style="color: #66c0f4;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
       </div>
       <h2 class="text-3xl font-bold mb-3 text-gradient-cyan-purple">
         Ready to Scan
       </h2>
-      <p class="text-slate-400 max-w-md mx-auto">
+      <p class="max-w-md mx-auto" style="color: #c7d5e0;">
         Enter a Steam APPID above and click Scan to find manifests and generate Lua scripts
       </p>
     </div>

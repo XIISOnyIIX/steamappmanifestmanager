@@ -34,17 +34,24 @@ class ToastManager {
         <p class="font-medium text-white">${this.getTitle(type)}</p>
         <p class="text-sm text-slate-300">${message}</p>
       </div>
-      <button class="text-slate-400 hover:text-white transition-colors" onclick="this.parentElement.remove()">
+      <button class="text-slate-400 hover:text-white transition-colors" onclick="this.parentElement.classList.add('removing'); setTimeout(() => this.parentElement.remove(), 400)">
         &times;
       </button>
+      ${duration > 0 ? '<div class="toast-progress"></div>' : ''}
     `;
 
     this.container.appendChild(toast);
 
     if (duration > 0) {
       setTimeout(() => {
-        toast.style.animation = 'fadeOut 0.3s ease-out';
-        setTimeout(() => toast.remove(), 300);
+        if (toast.parentElement) {
+          toast.classList.add('removing');
+          setTimeout(() => {
+            if (toast.parentElement) {
+              toast.remove();
+            }
+          }, 400);
+        }
       }, duration);
     }
 

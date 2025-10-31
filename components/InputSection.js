@@ -14,7 +14,7 @@ class InputSection {
     }
 
     container.innerHTML = `
-      <div class="glass relative">
+      <div class="input-wrapper glass relative">
         <input 
           type="number" 
           id="appIdInput" 
@@ -22,7 +22,6 @@ class InputSection {
           class="input-glass w-48"
           min="1"
         />
-        <div class="absolute inset-0 rounded-lg bg-gradient-to-r from-cyan-500/20 to-purple-500/20 opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div>
       </div>
       
       <button id="scanButton" class="btn-glass flex items-center gap-2">
@@ -32,8 +31,8 @@ class InputSection {
         <span id="scanButtonText">Scan</span>
       </button>
       
-      <button id="outputDirButton" class="glass p-2 rounded-lg hover:bg-white/10 transition-all hover:scale-105" title="Select output directory">
-        <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button id="outputDirButton" class="glass p-2 rounded-lg transition-all hover:scale-105" style="color: #66c0f4;" title="Select output directory">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
         </svg>
       </button>
@@ -147,9 +146,10 @@ class InputSection {
     if (!button) return;
 
     if (this.outputDir) {
-      button.classList.add('bg-green-500/20', 'border-green-500/30');
+      button.style.background = 'rgba(139, 197, 63, 0.2)';
+      button.style.borderColor = 'rgba(139, 197, 63, 0.3)';
       button.innerHTML = `
-        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-6 h-6" style="color: #8bc53f;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
         </svg>
       `;
