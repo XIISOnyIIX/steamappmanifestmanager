@@ -43,8 +43,8 @@ class InputSection {
         </button>
         
         <!-- Dropdown Menu -->
-        <div id="scanMenu" class="scan-dropdown-menu glass-strong hidden absolute top-full right-0 mt-2 rounded-lg overflow-hidden min-w-[220px] shadow-xl z-50">
-          <button class="dropdown-item w-full px-4 py-3 text-left transition-colors flex items-center gap-3">
+        <div id="scanMenu" class="scan-dropdown-menu glass-strong hidden absolute top-full right-0 mt-2 rounded-lg overflow-hidden min-w-[220px] shadow-xl z-50" style="margin-top: 8px;">
+          <button class="dropdown-item w-full px-4 py-3 text-left transition-colors flex items-center gap-3" style="cursor: pointer;">
             <span class="text-2xl">📚</span>
             <div>
               <div class="font-medium text-white">Scan All Installed Games</div>
@@ -66,6 +66,8 @@ class InputSection {
   }
 
   attachEventListeners() {
+    console.log('=== DROPDOWN DEBUG START ===');
+    
     const input = document.getElementById('appIdInput');
     const scanButton = document.getElementById('scanButton');
     const outputDirButton = document.getElementById('outputDirButton');
@@ -73,10 +75,36 @@ class InputSection {
     const scanMenu = document.getElementById('scanMenu');
     const dropdownItem = document.querySelector('.scan-dropdown-menu .dropdown-item');
 
+    // Debug: Check if elements exist
+    console.log('🔍 Element check:');
+    console.log('  - input exists?', !!input);
+    console.log('  - scanButton exists?', !!scanButton);
+    console.log('  - outputDirButton exists?', !!outputDirButton);
+    console.log('  - scanDropdown exists?', !!scanDropdown);
+    console.log('  - scanMenu exists?', !!scanMenu);
+    console.log('  - dropdownItem exists?', !!dropdownItem);
+
     if (!input || !scanButton || !outputDirButton || !scanDropdown || !scanMenu) {
-      console.error('Input section elements not found');
+      console.error('❌ Input section elements not found!');
+      console.error('Missing elements:', {
+        input: !input,
+        scanButton: !scanButton,
+        outputDirButton: !outputDirButton,
+        scanDropdown: !scanDropdown,
+        scanMenu: !scanMenu
+      });
       return;
     }
+
+    if (scanMenu) {
+      console.log('📊 Menu initial state:');
+      console.log('  - classList:', scanMenu.classList.toString());
+      console.log('  - display style:', window.getComputedStyle(scanMenu).display);
+      console.log('  - position:', window.getComputedStyle(scanMenu).position);
+      console.log('  - zIndex:', window.getComputedStyle(scanMenu).zIndex);
+    }
+
+    console.log('🔧 Attaching event listeners...');
 
     // Enter key to scan single APPID
     input.addEventListener('keypress', (e) => {
@@ -94,28 +122,79 @@ class InputSection {
 
     // Dropdown toggle - show/hide menu
     scanDropdown.addEventListener('click', (e) => {
+      console.log('🚨 DROPDOWN BUTTON CLICKED!');
+      console.log('  - Event target:', e.target);
+      console.log('  - Current target:', e.currentTarget);
+      
+      e.preventDefault();
       e.stopPropagation();
-      const isHidden = scanMenu.classList.contains('hidden');
-      scanMenu.classList.toggle('hidden');
-      // Add active class when dropdown is open
-      if (isHidden) {
-        scanDropdown.classList.add('active');
+      
+      if (scanMenu) {
+        const isHidden = scanMenu.classList.contains('hidden');
+        console.log('  - Menu currently hidden?', isHidden);
+        console.log('  - Menu classList before toggle:', scanMenu.classList.toString());
+        
+        scanMenu.classList.toggle('hidden');
+        
+        console.log('  - Menu classList after toggle:', scanMenu.classList.toString());
+        console.log('  - Menu hidden after toggle?', scanMenu.classList.contains('hidden'));
+        console.log('  - Menu display style:', window.getComputedStyle(scanMenu).display);
+        console.log('  - Menu visibility:', window.getComputedStyle(scanMenu).visibility);
+        console.log('  - Menu opacity:', window.getComputedStyle(scanMenu).opacity);
+        
+        // Add active class when dropdown is open
+        if (isHidden) {
+          scanDropdown.classList.add('active');
+          console.log('  - Added "active" class to dropdown button');
+        } else {
+          scanDropdown.classList.remove('active');
+          console.log('  - Removed "active" class from dropdown button');
+        }
+        
+        // Get menu position info
+        const rect = scanMenu.getBoundingClientRect();
+        console.log('  - Menu position:', {
+          top: rect.top,
+          left: rect.left,
+          right: rect.right,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height
+        });
       } else {
-        scanDropdown.classList.remove('active');
+        console.error('❌ scanMenu element not found in click handler!');
       }
+      
+      console.log('✅ Click handler completed');
     });
 
-    // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
+    console.log('✅ Dropdown click listener attached');
+
+    // Close menu when clicking outside (use capture phase to ensure it doesn't interfere)
+    const closeMenuHandler = (e) => {
+      // Check if click is outside both menu and button
       if (!scanMenu.contains(e.target) && !scanDropdown.contains(e.target)) {
-        scanMenu.classList.add('hidden');
-        scanDropdown.classList.remove('active');
+        if (!scanMenu.classList.contains('hidden')) {
+          console.log('🔴 Click outside detected - closing menu');
+          scanMenu.classList.add('hidden');
+          scanDropdown.classList.remove('active');
+        }
       }
-    });
+    };
+    
+    // Use setTimeout to avoid immediate closure on the same click that opened it
+    setTimeout(() => {
+      document.addEventListener('click', closeMenuHandler);
+      console.log('✅ Document click listener attached (delayed)');
+    }, 0);
+
+    console.log('✅ Document click listener will be attached');
 
     // Dropdown menu item - scan all installed games
     if (dropdownItem) {
       dropdownItem.addEventListener('click', async () => {
+        console.log('📚 Scan All menu item clicked');
+        
         // Close dropdown
         scanMenu.classList.add('hidden');
         scanDropdown.classList.remove('active');
@@ -126,17 +205,49 @@ class InputSection {
           'This will scan all games currently installed on Steam. This may take a few minutes for large libraries.'
         );
         
-        if (!confirmed) return;
+        if (!confirmed) {
+          console.log('User cancelled scan all');
+          return;
+        }
         
+        console.log('User confirmed - starting scan all');
         // Call scan all method
         this.handleScanAll();
       });
+      console.log('✅ Dropdown menu item listener attached');
+    } else {
+      console.warn('⚠️ No dropdown item found - scan all will not work');
     }
 
     // Output directory button
     outputDirButton.addEventListener('click', async () => {
       await this.selectOutputDirectory();
     });
+
+    console.log('=== DROPDOWN DEBUG END ===');
+    console.log('✅ All event listeners attached successfully');
+    
+    // Add global test function for debugging
+    window.testDropdownMenu = () => {
+      console.log('🧪 TESTING DROPDOWN MENU');
+      const menu = document.getElementById('scanMenu');
+      if (menu) {
+        console.log('Menu found - forcing visible');
+        menu.classList.remove('hidden');
+        menu.style.display = 'block';
+        menu.style.position = 'absolute';
+        menu.style.zIndex = '9999';
+        menu.style.background = 'rgba(255, 0, 0, 0.9)';
+        menu.style.color = 'white';
+        menu.style.padding = '20px';
+        menu.style.border = '3px solid yellow';
+        console.log('✅ Menu should now be visible with red background');
+        console.log('Menu position:', menu.getBoundingClientRect());
+      } else {
+        console.error('❌ Menu element does not exist in DOM!');
+      }
+    };
+    console.log('💡 Test function available: window.testDropdownMenu()');
   }
 
   async handleScan() {
