@@ -26,17 +26,17 @@ class InputSection {
       </div>
       
       <!-- Split Button Group -->
-      <div class="split-button-group relative">
+      <div class="split-button-group inline-flex relative">
         <!-- Main Scan Button (Left) -->
-        <button id="scanButton" class="glass px-6 py-2 rounded-l-lg hover:bg-white/10 border-r border-white/10 flex items-center gap-2">
+        <button id="scanButton" class="scan-main-btn px-6 py-2 hover:bg-white/10 transition-all flex items-center gap-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
           <span id="scanButtonText">Scan</span>
         </button>
         
-        <!-- Dropdown Toggle (Right) -->
-        <button id="scanDropdown" class="glass px-3 py-2 rounded-r-lg hover:bg-white/10">
+        <!-- Dropdown Toggle (Right) - NO GAP -->
+        <button id="scanDropdown" class="scan-dropdown-btn px-3 py-2 hover:bg-white/10 transition-all">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
@@ -95,13 +95,21 @@ class InputSection {
     // Dropdown toggle - show/hide menu
     scanDropdown.addEventListener('click', (e) => {
       e.stopPropagation();
+      const isHidden = scanMenu.classList.contains('hidden');
       scanMenu.classList.toggle('hidden');
+      // Add active class when dropdown is open
+      if (isHidden) {
+        scanDropdown.classList.add('active');
+      } else {
+        scanDropdown.classList.remove('active');
+      }
     });
 
     // Close menu when clicking outside
     document.addEventListener('click', (e) => {
       if (!scanMenu.contains(e.target) && e.target !== scanDropdown) {
         scanMenu.classList.add('hidden');
+        scanDropdown.classList.remove('active');
       }
     });
 
@@ -110,6 +118,7 @@ class InputSection {
       dropdownItem.addEventListener('click', async () => {
         // Close dropdown
         scanMenu.classList.add('hidden');
+        scanDropdown.classList.remove('active');
         
         // Confirm action
         const confirmed = await confirmModal.show(
@@ -216,6 +225,7 @@ class InputSection {
       scanButton.disabled = false;
       scanDropdown.disabled = false;
       input.disabled = false;
+      scanButton.className = 'scan-main-btn px-6 py-2 hover:bg-white/10 transition-all flex items-center gap-2';
       scanButton.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>

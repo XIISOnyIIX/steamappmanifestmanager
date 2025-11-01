@@ -13,6 +13,8 @@ This application showcases the seamless integration of:
 ## Features
 
 - 🎮 **APPID-Based Scanning**: Enter any Steam APPID to scan for manifests
+- 💿 **Multi-Drive Detection**: Automatically detects Steam libraries on all drives (C:, D:, E:, etc.)
+- 📚 **Scan All Games**: Scan all installed Steam games at once with one click
 - 🌟 **Aceternity UI Cards**: Animated cards with 3D hover effects and glowing borders
 - ✨ **Magic UI Buttons**: Shimmer and glow effects on interactive elements
 - 🎨 **DaisyUI Components**: Professional collapse, badges, modals, and toasts
@@ -72,6 +74,44 @@ npx tailwindcss -i ./styles.css -o ./dist/styles.css
 ```bash
 npm start
 ```
+
+## Building Distributable Packages
+
+To create distributable packages (exe, dmg, AppImage, etc.):
+
+### Build for Windows (creates .exe installer and portable):
+```bash
+npm run build:win
+```
+
+**Output:**
+- `dist/Steam Manifest Scanner Setup 1.0.0.exe` - NSIS Installer
+- `dist/Steam Manifest Scanner 1.0.0.exe` - Portable version
+
+### Build for Mac:
+```bash
+npm run build:mac
+```
+
+**Output:**
+- `dist/Steam Manifest Scanner-1.0.0.dmg` - DMG installer
+- Supports both x64 and ARM64 (Apple Silicon)
+
+### Build for Linux:
+```bash
+npm run build:linux
+```
+
+**Output:**
+- `dist/Steam Manifest Scanner-1.0.0.AppImage` - AppImage (universal)
+- `dist/steam-manifest-scanner_1.0.0_amd64.deb` - Debian package
+
+### Build for All Platforms:
+```bash
+npm run build:all
+```
+
+**Note:** Building for Mac requires macOS. Building for Windows on non-Windows platforms requires Wine.
 
 ## UI Library Architecture
 
@@ -170,8 +210,10 @@ setDecryptionKey(480,"abc123...")
 
 ### 1. Steam Detection
 - Automatically detects Steam installation paths
-- Supports multiple Steam library folders
-- Parses `libraryfolders.vdf` to find all game libraries
+- **Supports multiple Steam library folders across all drives**
+- Parses `libraryfolders.vdf` to find all game libraries (C:, D:, E:, etc.)
+- Checks both modern (`steamapps/libraryfolders.vdf`) and legacy (`config/libraryfolders.vdf`) locations
+- Logs all detected library paths to console for debugging
 
 ### 2. Manifest Scanning
 - Reads `appmanifest_{APPID}.acf` to get depot IDs
