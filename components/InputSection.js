@@ -14,29 +14,47 @@ class InputSection {
     }
 
     container.innerHTML = `
-      <label class="toggle-container">
-        <input type="checkbox" id="scanAllToggle" class="toggle-input" />
-        <span class="toggle-switch"></span>
-        <span class="toggle-label">Scan all installed</span>
-      </label>
-      
+      <!-- APPID Input -->
       <div class="input-wrapper glass relative">
         <input 
           type="number" 
           id="appIdInput" 
-          placeholder="Enter APPID"
+          placeholder="Enter APPID (e.g., 480, 730)"
           class="input-glass w-48"
           min="1"
         />
       </div>
       
-      <button id="scanButton" class="btn-glass flex items-center gap-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-        <span id="scanButtonText">Scan</span>
-      </button>
+      <!-- Split Button Group -->
+      <div class="split-button-group relative">
+        <!-- Main Scan Button (Left) -->
+        <button id="scanButton" class="glass px-6 py-2 rounded-l-lg hover:bg-white/10 border-r border-white/10 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <span id="scanButtonText">Scan</span>
+        </button>
+        
+        <!-- Dropdown Toggle (Right) -->
+        <button id="scanDropdown" class="glass px-3 py-2 rounded-r-lg hover:bg-white/10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        
+        <!-- Dropdown Menu -->
+        <div id="scanMenu" class="scan-dropdown-menu glass-strong hidden absolute top-full right-0 mt-2 rounded-lg overflow-hidden min-w-[220px] shadow-xl z-50">
+          <button class="dropdown-item w-full px-4 py-3 text-left transition-colors flex items-center gap-3">
+            <span class="text-2xl">📚</span>
+            <div>
+              <div class="font-medium text-white">Scan All Installed Games</div>
+              <div class="text-xs text-slate-400">Find all Steam games</div>
+            </div>
+          </button>
+        </div>
+      </div>
       
+      <!-- Output Directory Picker -->
       <button id="outputDirButton" class="glass p-2 rounded-lg transition-all hover:scale-105" style="color: #66c0f4;" title="Select output directory">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
@@ -51,69 +69,70 @@ class InputSection {
     const input = document.getElementById('appIdInput');
     const scanButton = document.getElementById('scanButton');
     const outputDirButton = document.getElementById('outputDirButton');
-    const scanAllToggle = document.getElementById('scanAllToggle');
+    const scanDropdown = document.getElementById('scanDropdown');
+    const scanMenu = document.getElementById('scanMenu');
+    const dropdownItem = document.querySelector('.scan-dropdown-menu .dropdown-item');
 
-    if (!input || !scanButton || !outputDirButton || !scanAllToggle) {
+    if (!input || !scanButton || !outputDirButton || !scanDropdown || !scanMenu) {
       console.error('Input section elements not found');
       return;
     }
 
+    // Enter key to scan single APPID
     input.addEventListener('keypress', (e) => {
       if (e.key === 'Enter' && !this.isScanning) {
         this.handleScan();
       }
     });
 
+    // Main button - scan single APPID
     scanButton.addEventListener('click', () => {
       if (!this.isScanning) {
         this.handleScan();
       }
     });
 
+    // Dropdown toggle - show/hide menu
+    scanDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scanMenu.classList.toggle('hidden');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!scanMenu.contains(e.target) && e.target !== scanDropdown) {
+        scanMenu.classList.add('hidden');
+      }
+    });
+
+    // Dropdown menu item - scan all installed games
+    if (dropdownItem) {
+      dropdownItem.addEventListener('click', async () => {
+        // Close dropdown
+        scanMenu.classList.add('hidden');
+        
+        // Confirm action
+        const confirmed = await confirmModal.show(
+          'Scan All Installed Games?',
+          'This will scan all games currently installed on Steam. This may take a few minutes for large libraries.'
+        );
+        
+        if (!confirmed) return;
+        
+        // Call scan all method
+        this.handleScanAll();
+      });
+    }
+
+    // Output directory button
     outputDirButton.addEventListener('click', async () => {
       await this.selectOutputDirectory();
     });
-
-    scanAllToggle.addEventListener('change', (e) => {
-      this.handleToggleChange(e.target.checked);
-    });
-  }
-
-  handleToggleChange(scanAll) {
-    console.log(`🎚️ Toggle changed to: ${scanAll ? 'Scan All' : 'Single APPID'}`);
-    console.log('🎚️ Only updating UI - NOT triggering scan');
-    
-    // GUARD: Check if app is still initializing
-    if (window.app && window.app.isInitializing) {
-      console.log('⚠️ App still initializing, skipping UI update');
-      return;
-    }
-    
-    const input = document.getElementById('appIdInput');
-    const scanButtonText = document.getElementById('scanButtonText');
-    
-    if (!input || !scanButtonText) return;
-
-    // ONLY update UI state - DO NOT trigger any scanning!
-    // Scanning only happens when user clicks the Scan button
-    if (scanAll) {
-      input.disabled = true;
-      input.placeholder = 'Scan all mode enabled';
-      input.style.opacity = '0.5';
-      scanButtonText.textContent = 'Scan All';
-    } else {
-      input.disabled = false;
-      input.placeholder = 'Enter APPID';
-      input.style.opacity = '1';
-      scanButtonText.textContent = 'Scan';
-    }
   }
 
   async handleScan() {
-    // THIS IS THE ONLY METHOD THAT SHOULD TRIGGER SCANNING
-    // Called when user clicks the Scan button or presses Enter
+    // Scan single APPID
     console.log('🔍 handleScan called - User initiated scan');
-    console.trace(); // Show call stack to verify it's user-initiated
     
     // GUARD: Prevent scanning during initialization
     if (window.app && window.app.isInitializing) {
@@ -122,92 +141,94 @@ class InputSection {
     }
     
     const input = document.getElementById('appIdInput');
-    const scanAllToggle = document.getElementById('scanAllToggle');
+    if (!input) return;
+
+    const appId = input.value.trim();
+
+    if (!appId) {
+      toastManager.warning('Please enter an APPID');
+      input.focus();
+      return;
+    }
+
+    const appIdNum = parseInt(appId);
+    if (isNaN(appIdNum) || appIdNum <= 0) {
+      toastManager.error('Please enter a valid positive APPID');
+      input.focus();
+      return;
+    }
+
+    this.setScanning(true);
     
-    if (!input || !scanAllToggle) return;
+    try {
+      await this.onScan(appIdNum);
+      input.value = '';
+    } catch (error) {
+      toastManager.error(error.message);
+    } finally {
+      this.setScanning(false);
+    }
+  }
 
-    const scanAll = scanAllToggle.checked;
+  async handleScanAll() {
+    // Scan all installed games
+    console.log('🔍 handleScanAll called - User initiated scan all');
+    
+    // GUARD: Prevent scanning during initialization
+    if (window.app && window.app.isInitializing) {
+      console.warn('⚠️ BLOCKED: Cannot scan during initialization');
+      return;
+    }
 
-    if (scanAll) {
-      // Scan all installed games
-      this.setScanning(true);
-      try {
-        // Call scan all method from app
-        if (window.app && window.app.scanAllInstalledGames) {
-          await window.app.scanAllInstalledGames();
-        } else {
-          throw new Error('Scan all functionality not available');
-        }
-      } catch (error) {
-        toastManager.error(error.message);
-      } finally {
-        this.setScanning(false);
+    this.setScanning(true);
+    
+    try {
+      // Call scan all method from app
+      if (window.app && window.app.scanAllInstalledGames) {
+        await window.app.scanAllInstalledGames();
+      } else {
+        throw new Error('Scan all functionality not available');
       }
-    } else {
-      // Scan single APPID mode
-      const appId = input.value.trim();
-
-      if (!appId) {
-        toastManager.warning('Please enter an APPID');
-        input.focus();
-        return;
-      }
-
-      const appIdNum = parseInt(appId);
-      if (isNaN(appIdNum) || appIdNum <= 0) {
-        toastManager.error('Please enter a valid positive APPID');
-        input.focus();
-        return;
-      }
-
-      this.setScanning(true);
-      
-      try {
-        await this.onScan(appIdNum);
-        input.value = '';
-      } catch (error) {
-        toastManager.error(error.message);
-      } finally {
-        this.setScanning(false);
-      }
+    } catch (error) {
+      toastManager.error(error.message);
+    } finally {
+      this.setScanning(false);
     }
   }
 
   setScanning(scanning) {
     this.isScanning = scanning;
     const scanButton = document.getElementById('scanButton');
+    const scanDropdown = document.getElementById('scanDropdown');
     const input = document.getElementById('appIdInput');
-    const scanAllToggle = document.getElementById('scanAllToggle');
 
-    if (!scanButton || !input) return;
+    if (!scanButton || !scanDropdown || !input) return;
 
     if (scanning) {
       scanButton.disabled = true;
+      scanDropdown.disabled = true;
       input.disabled = true;
-      if (scanAllToggle) scanAllToggle.disabled = true;
       scanButton.innerHTML = `
         <div class="spinner spinner-sm"></div>
-        <span>Scanning...</span>
+        <span id="scanButtonText">Scanning...</span>
       `;
     } else {
       scanButton.disabled = false;
-      if (scanAllToggle) {
-        scanAllToggle.disabled = false;
-        // Re-apply input state based on toggle
-        if (scanAllToggle.checked) {
-          input.disabled = true;
-        } else {
-          input.disabled = false;
-        }
-      } else {
-        input.disabled = false;
-      }
+      scanDropdown.disabled = false;
+      input.disabled = false;
       scanButton.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
-        <span>Scan</span>
+        <span id="scanButtonText">Scan</span>
       `;
+    }
+  }
+
+  updateScanProgress(current, total) {
+    const scanButtonText = document.getElementById('scanButtonText');
+    if (scanButtonText) {
+      scanButtonText.textContent = `${current}/${total}`;
     }
   }
 

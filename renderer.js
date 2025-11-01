@@ -32,7 +32,6 @@ class SteamManifestApp {
     this.inputSection = null;
     this.scannedGames = new Map();
     this.outputDir = null;
-    this.scanCancelled = false;
     this.isInitializing = true; // Flag to prevent scans during initialization
   }
 
@@ -40,9 +39,6 @@ class SteamManifestApp {
     try {
       console.log('🔧 Initializing Steam Manifest App...');
       console.log('🔧 No scans should be triggered during initialization!');
-      
-      // Ensure loading overlay is hidden on startup
-      this.hideLoadingOverlay();
       
       // Initialize toast manager
       if (typeof toastManager !== 'undefined') {
@@ -68,9 +64,6 @@ class SteamManifestApp {
         throw new Error('InputSection component not loaded');
       }
 
-      // Ensure UI is in default state (Single APPID mode)
-      this.setDefaultUIState();
-
       // Initialize Steam scanner
       if (typeof SteamScanner !== 'undefined') {
         this.scanner = new SteamScanner();
@@ -81,14 +74,6 @@ class SteamManifestApp {
         }
       } else {
         throw new Error('SteamScanner not loaded');
-      }
-
-      // Initialize cancel scan button
-      const cancelBtn = document.getElementById('cancelScanBtn');
-      if (cancelBtn) {
-        cancelBtn.addEventListener('click', () => {
-          this.cancelScan();
-        });
       }
 
       // Mark initialization complete
@@ -106,36 +91,6 @@ class SteamManifestApp {
       if (toastManager && toastManager.error) {
         toastManager.error(error.message);
       }
-    }
-  }
-
-  cancelScan() {
-    this.scanCancelled = true;
-  }
-
-  setDefaultUIState() {
-    console.log('🔧 Setting default UI state (toggle OFF, single APPID mode)');
-    
-    // Ensure toggle is unchecked (Single APPID mode by default)
-    const toggle = document.getElementById('scanAllToggle');
-    if (toggle) {
-      // Set checked state WITHOUT triggering change events
-      toggle.checked = false;
-      console.log('✓ Toggle set to unchecked (no events fired)');
-    }
-    
-    // Ensure input is enabled and ready
-    const input = document.getElementById('appIdInput');
-    if (input) {
-      input.disabled = false;
-      input.placeholder = 'Enter APPID';
-      input.style.opacity = '1';
-    }
-    
-    // Ensure button text is correct
-    const scanButtonText = document.getElementById('scanButtonText');
-    if (scanButtonText) {
-      scanButtonText.textContent = 'Scan';
     }
   }
 
@@ -193,33 +148,23 @@ class SteamManifestApp {
 
   async scanAllInstalledGames() {
     console.log('🚨 scanAllInstalledGames called!');
-    console.trace(); // This will show the call stack - WHO called this function
     
     // GUARD: Prevent any scanning during initialization
     if (this.isInitializing) {
       console.warn('⚠️ BLOCKED: Scan attempted during initialization!');
       return;
     }
-    
-    this.scanCancelled = false;
-    
-    // Show loading overlay
-    this.showLoadingOverlay('Finding installed games...');
 
     try {
       // Find all installed games
+      toastManager.info('Finding installed games...');
       const games = await this.scanner.findAllInstalledGames();
       console.log(`Found ${games.length} installed games`);
 
       if (games.length === 0) {
-        this.hideLoadingOverlay();
         toastManager.warning('No installed Steam games found');
         return;
       }
-
-      // Update loading message
-      this.updateLoadingMessage(`Scanning ${games.length} games...`);
-      this.updateLoadingCount(0, games.length);
 
       // Scan each game with rate limiting
       let processed = 0;
@@ -228,12 +173,6 @@ class SteamManifestApp {
       const batchSize = 5; // Process 5 at a time to avoid overwhelming Steam API
 
       for (let i = 0; i < games.length; i += batchSize) {
-        if (this.scanCancelled) {
-          this.hideLoadingOverlay();
-          toastManager.info(`Scan cancelled. Processed ${processed} of ${games.length} games.`);
-          return;
-        }
-
         const batch = games.slice(i, i + batchSize);
 
         // Process batch in parallel
@@ -249,23 +188,23 @@ class SteamManifestApp {
             failed++;
           } finally {
             processed++;
-            this.updateLoadingProgress(processed, games.length);
-            this.updateLoadingCount(processed, games.length);
+            // Update button with progress
+            if (this.inputSection && this.inputSection.updateScanProgress) {
+              this.inputSection.updateScanProgress(processed, games.length);
+            }
           }
         }));
 
         // Small delay between batches to respect rate limits
-        if (i + batchSize < games.length && !this.scanCancelled) {
+        if (i + batchSize < games.length) {
           await this.sleep(500);
         }
       }
 
-      this.hideLoadingOverlay();
       toastManager.success(`Scan complete! Successfully scanned ${successful} games.${failed > 0 ? ` (${failed} failed)` : ''}`);
 
     } catch (error) {
       console.error('Failed to scan all games:', error);
-      this.hideLoadingOverlay();
       toastManager.error(`Failed to scan installed games: ${error.message}`);
     }
   }
@@ -313,49 +252,6 @@ class SteamManifestApp {
     } catch (error) {
       console.error(`Error scanning APPID ${appId}:`, error);
       throw error;
-    }
-  }
-
-  showLoadingOverlay(message) {
-    const overlay = document.getElementById('loadingOverlay');
-    const loadingTitle = document.getElementById('loadingTitle');
-    
-    if (overlay) {
-      overlay.classList.remove('hidden');
-    }
-    
-    if (loadingTitle) {
-      loadingTitle.textContent = message || 'Loading...';
-    }
-  }
-
-  hideLoadingOverlay() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-      overlay.classList.add('hidden');
-    }
-    this.scanCancelled = false;
-  }
-
-  updateLoadingMessage(message) {
-    const loadingMessage = document.getElementById('loadingMessage');
-    if (loadingMessage) {
-      loadingMessage.textContent = message;
-    }
-  }
-
-  updateLoadingProgress(current, total) {
-    const progress = document.getElementById('loadingProgress');
-    if (progress) {
-      const percentage = (current / total) * 100;
-      progress.style.width = `${percentage}%`;
-    }
-  }
-
-  updateLoadingCount(current, total) {
-    const loadingCount = document.getElementById('loadingCount');
-    if (loadingCount) {
-      loadingCount.textContent = `${current} / ${total} games`;
     }
   }
 
