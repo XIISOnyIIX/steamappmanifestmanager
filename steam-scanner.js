@@ -245,6 +245,9 @@ class SteamScanner {
   }
 
   async findAllInstalledGames() {
+    console.log('🚨 findAllInstalledGames called!');
+    console.trace(); // This will show the call stack - WHO called this function
+    
     try {
       const installedGames = [];
       

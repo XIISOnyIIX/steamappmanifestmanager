@@ -80,6 +80,15 @@ class InputSection {
   }
 
   handleToggleChange(scanAll) {
+    console.log(`🎚️ Toggle changed to: ${scanAll ? 'Scan All' : 'Single APPID'}`);
+    console.log('🎚️ Only updating UI - NOT triggering scan');
+    
+    // GUARD: Check if app is still initializing
+    if (window.app && window.app.isInitializing) {
+      console.log('⚠️ App still initializing, skipping UI update');
+      return;
+    }
+    
     const input = document.getElementById('appIdInput');
     const scanButtonText = document.getElementById('scanButtonText');
     
@@ -103,6 +112,15 @@ class InputSection {
   async handleScan() {
     // THIS IS THE ONLY METHOD THAT SHOULD TRIGGER SCANNING
     // Called when user clicks the Scan button or presses Enter
+    console.log('🔍 handleScan called - User initiated scan');
+    console.trace(); // Show call stack to verify it's user-initiated
+    
+    // GUARD: Prevent scanning during initialization
+    if (window.app && window.app.isInitializing) {
+      console.warn('⚠️ BLOCKED: Cannot scan during initialization');
+      return;
+    }
+    
     const input = document.getElementById('appIdInput');
     const scanAllToggle = document.getElementById('scanAllToggle');
     

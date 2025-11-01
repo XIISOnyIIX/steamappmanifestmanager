@@ -33,11 +33,13 @@ class SteamManifestApp {
     this.scannedGames = new Map();
     this.outputDir = null;
     this.scanCancelled = false;
+    this.isInitializing = true; // Flag to prevent scans during initialization
   }
 
   async initialize() {
     try {
-      console.log('Initializing Steam Manifest App...');
+      console.log('🔧 Initializing Steam Manifest App...');
+      console.log('🔧 No scans should be triggered during initialization!');
       
       // Ensure loading overlay is hidden on startup
       this.hideLoadingOverlay();
@@ -89,11 +91,16 @@ class SteamManifestApp {
         });
       }
 
-      console.log('App initialized successfully');
+      // Mark initialization complete
+      this.isInitializing = false;
+      
+      console.log('✅ App initialized successfully - NO SCANS TRIGGERED');
+      console.log('✅ User must click the Scan button to start scanning');
       
       // DO NOT call any scan functions here!
       // User must click the scan button to start scanning
     } catch (error) {
+      this.isInitializing = false;
       console.error('Initialization error:', error);
       this.showError(`Failed to initialize: ${error.message}`);
       if (toastManager && toastManager.error) {
@@ -107,10 +114,14 @@ class SteamManifestApp {
   }
 
   setDefaultUIState() {
+    console.log('🔧 Setting default UI state (toggle OFF, single APPID mode)');
+    
     // Ensure toggle is unchecked (Single APPID mode by default)
     const toggle = document.getElementById('scanAllToggle');
     if (toggle) {
+      // Set checked state WITHOUT triggering change events
       toggle.checked = false;
+      console.log('✓ Toggle set to unchecked (no events fired)');
     }
     
     // Ensure input is enabled and ready
@@ -133,6 +144,12 @@ class SteamManifestApp {
   }
 
   async scanAppId(appId) {
+    // GUARD: Prevent any scanning during initialization
+    if (this.isInitializing) {
+      console.warn('⚠️ BLOCKED: Scan attempted during initialization!');
+      return;
+    }
+    
     if (this.scannedGames.has(appId)) {
       toastManager.warning(`APPID ${appId} has already been scanned`);
       return;
@@ -175,6 +192,15 @@ class SteamManifestApp {
   }
 
   async scanAllInstalledGames() {
+    console.log('🚨 scanAllInstalledGames called!');
+    console.trace(); // This will show the call stack - WHO called this function
+    
+    // GUARD: Prevent any scanning during initialization
+    if (this.isInitializing) {
+      console.warn('⚠️ BLOCKED: Scan attempted during initialization!');
+      return;
+    }
+    
     this.scanCancelled = false;
     
     // Show loading overlay
@@ -245,6 +271,12 @@ class SteamManifestApp {
   }
 
   async scanGameByAppId(appId) {
+    // GUARD: Prevent any scanning during initialization
+    if (this.isInitializing) {
+      console.warn('⚠️ BLOCKED: Scan attempted during initialization!');
+      return;
+    }
+    
     try {
       const gameInfo = await this.fetchGameInfo(appId);
       
@@ -600,10 +632,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     console.log('DOM loaded, initializing app...');
     app = new SteamManifestApp();
-    await app.initialize();
     
-    // Expose app globally for InputSection
+    // Expose app globally BEFORE initialization so guards can check isInitializing
     window.app = app;
+    
+    await app.initialize();
     
     // Initialize scroll animations
     observeScrollAnimations();
