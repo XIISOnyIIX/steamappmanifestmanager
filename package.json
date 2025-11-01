@@ -42,7 +42,10 @@
       "styles.css",
       "components/**/*",
       "dist/styles.css",
-      "node_modules/**/*"
+      "node_modules/**/*",
+      "!node_modules/**/*.md",
+      "!node_modules/**/LICENSE*",
+      "!node_modules/**/README*"
     ],
     "win": {
       "target": [

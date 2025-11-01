@@ -107,7 +107,7 @@ class InputSection {
 
     // Close menu when clicking outside
     document.addEventListener('click', (e) => {
-      if (!scanMenu.contains(e.target) && e.target !== scanDropdown) {
+      if (!scanMenu.contains(e.target) && !scanDropdown.contains(e.target)) {
         scanMenu.classList.add('hidden');
         scanDropdown.classList.remove('active');
       }
