@@ -53,7 +53,7 @@
         Ready to Scan
       </h2>
       <p class="max-w-md mx-auto" style="color: #c7d5e0;">
-        Enter a Steam APPID above or toggle "Scan all installed" to scan all your Steam games at once
+        Enter a Steam APPID above to scan a specific game, or use the dropdown menu to scan all installed games
       </p>
     </div>
     
@@ -66,20 +66,6 @@
 
   <!-- Confirmation Modal Container -->
   <div id="modalContainer"></div>
-
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="loading-overlay hidden">
-    <div class="glass-strong loading-card">
-      <div class="loading-spinner"></div>
-      <h3 id="loadingTitle" class="text-2xl font-bold mb-2 text-gradient-cyan-purple">Scanning games...</h3>
-      <p id="loadingMessage" class="text-slate-300 mb-4">Finding installed games</p>
-      <div class="progress-bar">
-        <div id="loadingProgress" class="progress-fill" style="width: 0%"></div>
-      </div>
-      <p id="loadingCount" class="text-sm text-slate-400 mt-2">0 / 0 games</p>
-      <button id="cancelScanBtn" class="btn-glass-danger mt-4">Cancel Scan</button>
-    </div>
-  </div>
 
   <!-- Scripts -->
   <script src="steam-scanner.js"></script>
