@@ -4,4 +4,23 @@ node_modules/
 .env
 package-lock.json
 yarn.lock
-dist/
+
+# Tailwind build output
+dist/styles.css
+
+# Build outputs
+dist/*.exe
+dist/*.dmg
+dist/*.AppImage
+dist/*.deb
+dist/*.snap
+dist/*.rpm
+dist/*.tar.gz
+dist/*.zip
+dist/win-unpacked/
+dist/mac/
+dist/linux-unpacked/
+
+# electron-builder
+.electron-builder
+build/
