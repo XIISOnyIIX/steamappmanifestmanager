@@ -29,6 +29,7 @@
   "build": {
     "appId": "com.steammanifestscanner.app",
     "productName": "Steam Manifest Scanner",
+    "icon": "build/icon.png",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -58,7 +59,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "build/icon.ico",
+      "icon": "build/icon.png",
       "signAndEditExecutable": false
     },
     "mac": {
@@ -68,7 +69,7 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "icon": "build/icon.icns",
+      "icon": "build/icon.png",
       "category": "public.app-category.utilities"
     },
     "linux": {
