@@ -86,6 +86,7 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    icon: path.join(__dirname, 'build/icon.ico'),
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
