@@ -62,6 +62,11 @@ class SteamManifestApp {
         await aboutModal.initialize();
       }
       
+      // Initialize version display
+      if (typeof versionDisplay !== 'undefined') {
+        await versionDisplay.initialize();
+      }
+      
       // Initialize input section
       if (typeof InputSection !== 'undefined') {
         this.inputSection = new InputSection(

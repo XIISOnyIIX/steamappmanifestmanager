@@ -1,6 +1,6 @@
 {
   "name": "steam-manifest-scanner",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Scan Steam games and generate Lua manifest scripts",
   "author": "Steam Manifest Scanner",
   "main": "main.js",

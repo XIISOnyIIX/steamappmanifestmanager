@@ -93,6 +93,7 @@ function createWindow() {
     backgroundColor: '#0f172a',
     titleBarStyle: 'default',
     show: false,
+    icon: path.join(__dirname, 'build', 'icon.ico'),
   });
 
   mainWindow.loadFile('index.html');
