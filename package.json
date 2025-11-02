@@ -59,7 +59,6 @@
       "!node_modules/**/LICENSE*",
       "!node_modules/**/README*"
     ],
-    "artifactName": "${productName}-${version}.${ext}",
     "win": {
       "target": [
         {
@@ -77,7 +76,10 @@
       ],
       "icon": "build/icon.ico",
       "signAndEditExecutable": false,
-      "artifactName": "${productName}-Setup-${version}.${ext}"
+      "artifactName": "Steam-Manifest-Scanner-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Steam-Manifest-Scanner-${version}.${ext}"
     },
     "mac": {
       "target": [
