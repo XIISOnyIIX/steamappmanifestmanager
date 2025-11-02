@@ -47,6 +47,16 @@ class SteamManifestApp {
         confirmModal.initialize();
       }
       
+      // Initialize patch notes modal
+      if (typeof patchNotesModal !== 'undefined') {
+        patchNotesModal.initialize();
+      }
+      
+      // Initialize update notification
+      if (typeof updateNotification !== 'undefined') {
+        updateNotification.initialize();
+      }
+      
       // Initialize about modal
       if (typeof aboutModal !== 'undefined') {
         await aboutModal.initialize();

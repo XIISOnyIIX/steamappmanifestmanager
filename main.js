@@ -1,9 +1,84 @@
 const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 
 let mainWindow;
+let updateDownloaded = false;
+
+// Configure auto-updater
+autoUpdater.autoDownload = false; // Don't auto-download, let user decide
+autoUpdater.autoInstallOnAppQuit = true; // Install on quit if downloaded
+
+// Auto-updater event handlers
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for update...');
+  sendStatusToWindow('update-checking');
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available:', info.version);
+  sendStatusToWindow('update-available', {
+    version: info.version,
+    releaseDate: info.releaseDate,
+    releaseNotes: info.releaseNotes
+  });
+  
+  // Show non-intrusive notification
+  if (mainWindow) {
+    mainWindow.webContents.send('update-available', {
+      version: info.version
+    });
+  }
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available:', info.version);
+  sendStatusToWindow('update-not-available');
+});
+
+autoUpdater.on('error', (err) => {
+  console.error('Update error:', err);
+  sendStatusToWindow('update-error', { 
+    error: err.message || 'Unknown error occurred' 
+  });
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  console.log(`Download progress: ${progressObj.percent}%`);
+  sendStatusToWindow('download-progress', {
+    percent: progressObj.percent,
+    transferred: progressObj.transferred,
+    total: progressObj.total
+  });
+  
+  if (mainWindow) {
+    mainWindow.webContents.send('download-progress', progressObj);
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded:', info.version);
+  updateDownloaded = true;
+  sendStatusToWindow('update-downloaded', {
+    version: info.version
+  });
+  
+  // Show notification that update is ready
+  if (mainWindow) {
+    mainWindow.webContents.send('update-downloaded', {
+      version: info.version
+    });
+  }
+});
+
+function sendStatusToWindow(status, data = {}) {
+  console.log('Update status:', status, data);
+  if (mainWindow && mainWindow.webContents) {
+    mainWindow.webContents.send('update-status', { status, ...data });
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -38,6 +113,17 @@ app.whenReady().then(() => {
   }
   
   createWindow();
+  
+  // Auto-check for updates on startup (only in production)
+  if (app.isPackaged) {
+    // Delay the check by 3 seconds to not interfere with app startup
+    setTimeout(() => {
+      console.log('Auto-checking for updates on startup...');
+      autoUpdater.checkForUpdates().catch(err => {
+        console.error('Auto-update check failed:', err);
+      });
+    }, 3000);
+  }
 });
 
 app.on('window-all-closed', () => {
@@ -155,4 +241,85 @@ ipcMain.handle('open-directory', async (event, dirPath) => {
     console.error('Error opening directory:', error);
     return { success: false, error: error.message };
   }
+});
+
+// Auto-updater IPC handlers
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    if (!app.isPackaged) {
+      // In development, simulate no update available
+      return { 
+        available: false, 
+        error: 'Update checking is only available in production builds' 
+      };
+    }
+    
+    const result = await autoUpdater.checkForUpdates();
+    
+    if (!result || !result.updateInfo) {
+      return { available: false };
+    }
+    
+    const currentVersion = app.getVersion();
+    const latestVersion = result.updateInfo.version;
+    
+    if (latestVersion !== currentVersion) {
+      return {
+        available: true,
+        version: latestVersion,
+        currentVersion: currentVersion,
+        releaseDate: result.updateInfo.releaseDate,
+        releaseNotes: result.updateInfo.releaseNotes
+      };
+    }
+    
+    return { available: false, currentVersion };
+  } catch (error) {
+    console.error('Check for updates error:', error);
+    return { 
+      available: false, 
+      error: error.message || 'Failed to check for updates' 
+    };
+  }
+});
+
+ipcMain.handle('download-update', async () => {
+  try {
+    if (!app.isPackaged) {
+      return { 
+        success: false, 
+        error: 'Update downloading is only available in production builds' 
+      };
+    }
+    
+    await autoUpdater.downloadUpdate();
+    return { success: true };
+  } catch (error) {
+    console.error('Download update error:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Failed to download update' 
+    };
+  }
+});
+
+ipcMain.handle('install-update', () => {
+  if (updateDownloaded) {
+    // Quit and install the update
+    setImmediate(() => {
+      autoUpdater.quitAndInstall(false, true);
+    });
+    return { success: true };
+  }
+  return { 
+    success: false, 
+    error: 'No update has been downloaded yet' 
+  };
+});
+
+ipcMain.handle('get-update-status', () => {
+  return {
+    downloaded: updateDownloaded,
+    isPackaged: app.isPackaged
+  };
 });

@@ -13,23 +13,34 @@
     "build:linux": "electron-builder --linux",
     "build:all": "electron-builder -mwl"
   },
-  "keywords": ["electron", "steam", "manifest", "scanner"],
+  "keywords": [
+    "electron",
+    "steam",
+    "manifest",
+    "scanner"
+  ],
   "license": "MIT",
   "dependencies": {
-    "vdf-parser": "^1.2.0",
-    "node-fetch": "^3.3.0"
+    "electron-updater": "^6.6.2",
+    "node-fetch": "^3.3.0",
+    "vdf-parser": "^1.2.0"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.0",
     "electron": "^30.0.0",
     "electron-builder": "^24.0.0",
-    "tailwindcss": "^3.4.0",
-    "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.0"
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0"
   },
   "build": {
     "appId": "com.steammanifestscanner.app",
     "productName": "Steam Manifest Scanner",
     "icon": "build/icon.png",
+    "publish": {
+      "provider": "github",
+      "owner": "XIISOnyIIX",
+      "repo": "steamappmanifestmanager"
+    },
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -52,11 +63,15 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.png",
@@ -66,7 +81,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "build/icon.png",
@@ -76,11 +94,15 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "deb",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.png",
