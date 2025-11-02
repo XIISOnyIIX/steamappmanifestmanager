@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
@@ -128,4 +128,27 @@ ipcMain.handle('read-dir', async (event, dirPath) => {
 
 ipcMain.handle('get-platform', () => {
   return process.platform;
+});
+
+ipcMain.handle('open-directory', async (event, dirPath) => {
+  try {
+    if (!dirPath) {
+      return { success: false, error: 'No directory path provided' };
+    }
+
+    if (!fsSync.existsSync(dirPath)) {
+      return { success: false, error: 'Directory does not exist' };
+    }
+
+    const result = await shell.openPath(dirPath);
+    
+    if (result) {
+      return { success: false, error: result };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error opening directory:', error);
+    return { success: false, error: error.message };
+  }
 });
