@@ -170,6 +170,7 @@ class SteamManifestApp {
       let processed = 0;
       let successful = 0;
       let failed = 0;
+      let skipped = 0;
       const batchSize = 5; // Process 5 at a time to avoid overwhelming Steam API
 
       for (let i = 0; i < games.length; i += batchSize) {
@@ -182,10 +183,25 @@ class SteamManifestApp {
             if (!this.scannedGames.has(game.appId)) {
               await this.scanGameByAppId(game.appId);
               successful++;
+            } else {
+              skipped++;
             }
           } catch (error) {
             console.error(`Failed to scan ${game.appId} (${game.name}):`, error);
-            failed++;
+            
+            // Don't count as failure if it's just invalid game data from Steam API
+            // or if it's a system package/tool that Steam API rejects
+            if (error.message.includes('Invalid APPID or game not found') ||
+                error.message.includes('not found in Steam API') ||
+                error.message.includes('system package') ||
+                error.message.includes('tool') ||
+                error.message.includes('utility')) {
+              console.log(`⏭️  Skipping invalid/system game data for ${game.appId}`);
+              skipped++;
+            } else {
+              // Real failure
+              failed++;
+            }
           } finally {
             processed++;
             // Update button with progress
@@ -201,7 +217,12 @@ class SteamManifestApp {
         }
       }
 
-      toastManager.success(`Scan complete! Successfully scanned ${successful} games.${failed > 0 ? ` (${failed} failed)` : ''}`);
+      // Show appropriate completion message
+      if (failed > 0) {
+        toastManager.warning(`Scan complete! Scanned ${successful} games. (${failed} errors, ${skipped} skipped)`);
+      } else {
+        toastManager.success(`Scan complete! Successfully scanned ${successful} games.`);
+      }
 
     } catch (error) {
       console.error('Failed to scan all games:', error);
@@ -272,11 +293,23 @@ class SteamManifestApp {
       if (!data[appId] || !data[appId].success) {
         return {
           success: false,
-          error: 'Invalid APPID or game not found',
+          error: 'Invalid APPID or game not found in Steam API',
         };
       }
 
       const gameData = data[appId].data;
+      
+      // Additional validation: skip non-game content
+      if (gameData.type === 'dlc' || 
+          gameData.type === 'video' || 
+          gameData.type === 'series' ||
+          gameData.type === 'demo') {
+        return {
+          success: false,
+          error: `Skipping non-game content: ${gameData.type}`,
+        };
+      }
+      
       return {
         success: true,
         name: gameData.name || 'Unknown Game',
