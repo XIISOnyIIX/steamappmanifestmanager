@@ -12,7 +12,7 @@ class PatchNotesModal {
 
     // Create the modal HTML
     const modalHTML = `
-      <div id="patchNotesModal" class="about-modal-overlay hidden" onclick="if(event.target === this) patchNotesModal.close()">
+      <div id="patchNotesModal" class="about-modal-overlay patch-notes-modal hidden" onclick="if(event.target === this) patchNotesModal.close()">
         <div class="about-modal-content patch-notes-content" onclick="event.stopPropagation()">
           <!-- Close Button -->
           <button class="about-modal-close" onclick="patchNotesModal.close()" title="Close">
@@ -69,6 +69,9 @@ class PatchNotesModal {
       const response = await fetch('https://api.github.com/repos/XIISOnyIIX/steamappmanifestmanager/releases/latest');
       
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('NO_RELEASES');
+        }
         throw new Error(`GitHub API error: ${response.status}`);
       }
 
@@ -116,21 +119,46 @@ class PatchNotesModal {
 
     } catch (error) {
       console.error('Error fetching patch notes:', error);
-      contentDiv.innerHTML = `
-        <div class="flex flex-col items-center justify-center py-12">
-          <svg class="w-16 h-16 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <h3 class="text-xl font-semibold text-red-400 mb-2">Failed to Load Patch Notes</h3>
-          <p class="text-slate-300 text-center max-w-md mb-4">${this.escapeHtml(error.message)}</p>
-          <button class="btn-glass" onclick="patchNotesModal.show()">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+      
+      // Handle 404 specifically with a friendly message
+      if (error.message === 'NO_RELEASES') {
+        contentDiv.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-12">
+            <div class="relative mb-6">
+              <div class="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center">
+                <svg class="w-12 h-12 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div class="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center animate-pulse">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>
+            </div>
+            <h3 class="text-2xl font-bold text-gradient-cyan-purple mb-3">No Releases Yet</h3>
+            <p class="text-slate-300 text-center max-w-md mb-2">This is the first version of the app!</p>
+            <p class="text-slate-400 text-center text-sm">Check back soon for updates and patch notes.</p>
+          </div>
+        `;
+      } else {
+        // Show error message for other errors
+        contentDiv.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-12">
+            <svg class="w-16 h-16 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span>Retry</span>
-          </button>
-        </div>
-      `;
+            <h3 class="text-xl font-semibold text-red-400 mb-2">Failed to Load Patch Notes</h3>
+            <p class="text-slate-300 text-center max-w-md mb-4">${this.escapeHtml(error.message)}</p>
+            <button class="btn-glass" onclick="patchNotesModal.show()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              <span>Retry</span>
+            </button>
+          </div>
+        `;
+      }
     }
   }
 
