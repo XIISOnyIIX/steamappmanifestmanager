@@ -1,6 +1,19 @@
 const VDF = require('vdf-parser');
 const { ipcRenderer } = require('electron');
 
+// System packages that should be filtered out (not games)
+const SYSTEM_APPIDS = new Set([
+  228980,  // Steamworks Common Redistributables
+  1070560, // Steam Linux Runtime
+  1391110, // Steam Linux Runtime - Soldier
+  1493710, // Proton Experimental
+  1887720, // Proton 7.0
+  228990,  // Steamworks Common Redistributables (alternative)
+  2348590, // Proton 8.0
+  1826330, // Proton EasyAntiCheat Runtime
+  1161040, // Steamworks Shared Beta
+]);
+
 class SteamScanner {
   constructor() {
     this.steamPaths = [];
@@ -331,6 +344,14 @@ class SteamScanner {
               if (!match) continue;
               
               const appId = match[1];
+              const appIdNum = parseInt(appId);
+              
+              // FILTER OUT SYSTEM PACKAGES
+              if (SYSTEM_APPIDS.has(appIdNum)) {
+                console.log(`⏭️  Skipping system package: ${appId}`);
+                continue;
+              }
+              
               const acfPath = this.joinPath(steamappsPath, file);
               
               // Parse ACF to check if actually installed
@@ -339,6 +360,15 @@ class SteamScanner {
               
               if (parsed && parsed.AppState) {
                 const appState = parsed.AppState;
+                
+                // Additional filter: check if it's a tool/utility
+                const appType = appState.type || '';
+                if (appType.toLowerCase() === 'tool' || 
+                    appType.toLowerCase() === 'config' ||
+                    appType.toLowerCase() === 'application') {
+                  console.log(`⏭️  Skipping tool/utility: ${appId} (${appState.name || 'Unknown'})`);
+                  continue;
+                }
                 
                 // Check StateFlags to ensure game is fully installed
                 if (appState.StateFlags) {
@@ -362,7 +392,7 @@ class SteamScanner {
         }
       }
       
-      console.log(`✅ Total installed games found: ${installedGames.length}`);
+      console.log(`✅ Total installed games found: ${installedGames.length} (system packages filtered)`);
       return installedGames;
     } catch (error) {
       console.error('❌ Error finding installed games:', error);
