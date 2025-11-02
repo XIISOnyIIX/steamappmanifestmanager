@@ -426,7 +426,7 @@
   .about-modal-overlay {
     @apply fixed inset-0;
     @apply flex items-center justify-center;
-    z-index: 10000;
+    z-index: 9998;
     background: rgba(0, 0, 0, 0);
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
@@ -1494,8 +1494,12 @@
 }
 
 /* ========== PATCH NOTES MODAL ========== */
-.patch-notes-modal {
-  z-index: 10001;
+.about-modal-overlay.patch-notes-modal {
+  z-index: 10000;
+}
+
+.about-modal-overlay.patch-notes-modal.active {
+  z-index: 10000;
 }
 
 .patch-notes-content {
