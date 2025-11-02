@@ -9,7 +9,6 @@ class InputSection {
   render() {
     const container = document.getElementById('inputSection');
     if (!container) {
-      console.error('Input section container not found');
       return;
     }
 
@@ -19,7 +18,7 @@ class InputSection {
         <input 
           type="number" 
           id="appIdInput" 
-          placeholder="Enter APPID (e.g., 480, 730)"
+          placeholder="Enter APPID"
           class="input-glass w-48"
           min="1"
         />
@@ -74,7 +73,6 @@ class InputSection {
     const dropdownItem = document.querySelector('.scan-dropdown-menu .dropdown-item');
 
     if (!input || !scanButton || !outputDirButton || !scanDropdown || !scanMenu) {
-      console.error('Input section elements not found!');
       return;
     }
 
@@ -151,11 +149,8 @@ class InputSection {
 
   async handleScan() {
     // Scan single APPID
-    console.log('🔍 handleScan called - User initiated scan');
-    
     // GUARD: Prevent scanning during initialization
     if (window.app && window.app.isInitializing) {
-      console.warn('⚠️ BLOCKED: Cannot scan during initialization');
       return;
     }
     
@@ -191,11 +186,8 @@ class InputSection {
 
   async handleScanAll() {
     // Scan all installed games
-    console.log('🔍 handleScanAll called - User initiated scan all');
-    
     // GUARD: Prevent scanning during initialization
     if (window.app && window.app.isInitializing) {
-      console.warn('⚠️ BLOCKED: Cannot scan during initialization');
       return;
     }
 
