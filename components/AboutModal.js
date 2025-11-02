@@ -112,13 +112,51 @@ class AboutModal {
   }
 
   viewPatchNotes() {
-    toastManager.info('Patch notes - Coming soon!');
-    // Placeholder for future implementation
+    if (typeof patchNotesModal !== 'undefined') {
+      patchNotesModal.show();
+    } else {
+      toastManager.error('Patch notes modal not loaded');
+    }
   }
 
-  checkForUpdates() {
-    toastManager.info('Update checker - Coming soon!');
-    // Placeholder for future implementation
+  async checkForUpdates() {
+    try {
+      const { ipcRenderer } = require('electron');
+      
+      // Get the check button and show loading state
+      const checkBtn = document.querySelector('.about-button-secondary');
+      if (checkBtn) {
+        checkBtn.disabled = true;
+        checkBtn.innerHTML = `
+          <div class="spinner spinner-sm"></div>
+          <span>Checking...</span>
+        `;
+      }
+
+      const result = await ipcRenderer.invoke('check-for-updates');
+      
+      // Restore button state
+      if (checkBtn) {
+        checkBtn.disabled = false;
+        checkBtn.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Check for Updates</span>
+        `;
+      }
+
+      if (result.available) {
+        toastManager.info(`Update available: ${result.version}`);
+      } else if (result.error) {
+        toastManager.error(`Update check failed: ${result.error}`);
+      } else {
+        toastManager.success('You\'re up to date!');
+      }
+    } catch (error) {
+      console.error('Failed to check for updates:', error);
+      toastManager.error('Failed to check for updates');
+    }
   }
 }
 
