@@ -65,13 +65,6 @@ npm start
 
 ## 🛠️ Building
 
-### Custom App Icon
-
-To use a custom application icon:
-1. Place your icon as `build/icon.png` (512x512 PNG recommended)
-2. electron-builder will automatically convert it for all platforms
-3. See `build/README.md` for detailed icon requirements
-
 ### Build for Windows
 ```bash
 npm run build:win
