@@ -3,7 +3,6 @@ node_modules/
 
 # Build outputs
 dist/
-build/
 out/
 *.exe
 *.dmg
@@ -13,6 +12,12 @@ out/
 *.snap
 *.tar.gz
 *.zip
+
+# Build resources (ignore icons, but track README)
+build/icon.png
+build/icon.ico
+build/icon.icns
+build/*.svg
 
 # Electron
 .electron-builder
