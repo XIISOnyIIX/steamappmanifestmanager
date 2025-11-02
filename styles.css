@@ -444,6 +444,7 @@
   .about-modal-content {
     @apply glass-strong rounded-3xl p-8 max-w-md w-full mx-4;
     position: relative;
+    z-index: 9999;
     opacity: 0;
     transform: scale(0.9) translateY(20px);
     transition: all 0.4s var(--ease-out-expo);
@@ -1506,6 +1507,7 @@
   max-width: 700px;
   max-height: 85vh;
   overflow-y: auto;
+  z-index: 10001;
 }
 
 .patch-notes-header {
