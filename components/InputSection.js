@@ -53,12 +53,23 @@ class InputSection {
         </div>
       </div>
       
-      <!-- Output Directory Picker -->
-      <button id="outputDirButton" class="glass p-2 rounded-lg transition-all hover:scale-105" style="color: #66c0f4;" title="Select output directory">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
-        </svg>
-      </button>
+      <!-- Output Directory Controls -->
+      <div class="flex items-center gap-2">
+        <!-- Output Directory Picker -->
+        <button id="outputDirButton" class="glass p-2 rounded-lg transition-all hover:scale-105" style="color: #66c0f4;" title="Select output directory">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+          </svg>
+        </button>
+        
+        <!-- Open Output Directory Button -->
+        <button id="openOutputDirButton" class="glass p-2 rounded-lg transition-all hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100" style="color: #66c0f4;" title="Open output folder" disabled>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+          </svg>
+        </button>
+      </div>
     `;
 
     this.attachEventListeners();
@@ -68,11 +79,12 @@ class InputSection {
     const input = document.getElementById('appIdInput');
     const scanButton = document.getElementById('scanButton');
     const outputDirButton = document.getElementById('outputDirButton');
+    const openOutputDirButton = document.getElementById('openOutputDirButton');
     const scanDropdown = document.getElementById('scanDropdown');
     const scanMenu = document.getElementById('scanMenu');
     const dropdownItem = document.querySelector('.scan-dropdown-menu .dropdown-item');
 
-    if (!input || !scanButton || !outputDirButton || !scanDropdown || !scanMenu) {
+    if (!input || !scanButton || !outputDirButton || !openOutputDirButton || !scanDropdown || !scanMenu) {
       return;
     }
 
@@ -144,6 +156,11 @@ class InputSection {
     // Output directory button
     outputDirButton.addEventListener('click', async () => {
       await this.selectOutputDirectory();
+    });
+
+    // Open output directory button
+    openOutputDirButton.addEventListener('click', async () => {
+      await this.openOutputDirectory();
     });
   }
 
@@ -262,6 +279,7 @@ class InputSection {
 
   updateOutputDirDisplay() {
     const button = document.getElementById('outputDirButton');
+    const openButton = document.getElementById('openOutputDirButton');
     if (!button) return;
 
     if (this.outputDir) {
@@ -272,6 +290,29 @@ class InputSection {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
         </svg>
       `;
+
+      if (openButton) {
+        openButton.disabled = false;
+      }
+    }
+  }
+
+  async openOutputDirectory() {
+    if (!this.outputDir) {
+      toastManager.warning('Please select an output directory first');
+      return;
+    }
+
+    try {
+      const { ipcRenderer } = require('electron');
+      const result = await ipcRenderer.invoke('open-directory', this.outputDir);
+      
+      if (!result.success) {
+        toastManager.error(`Failed to open directory: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error opening directory:', error);
+      toastManager.error('Failed to open directory');
     }
   }
 
