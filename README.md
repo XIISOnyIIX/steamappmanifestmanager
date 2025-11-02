@@ -25,8 +25,8 @@ A modern Electron app to scan Steam games and generate Lua manifest scripts with
 ### Setup
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/steam-manifest-scanner.git
-cd steam-manifest-scanner
+git clone https://github.com/XIISOnyIIX/steamappmanifestmanager.git
+cd steamappmanifestmanager
 
 # Install dependencies
 npm install
@@ -157,4 +157,4 @@ For issues or questions, please open a GitHub issue.
 
 ---
 
-**Made with ❤️ for the Steam community**
+**Made with ❤️**
