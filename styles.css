@@ -424,8 +424,9 @@
 
   /* ========== ABOUT MODAL WITH LIVELY ANIMATIONS ========== */
   .about-modal-overlay {
-    @apply fixed inset-0 z-50;
+    @apply fixed inset-0;
     @apply flex items-center justify-center;
+    z-index: 10000;
     background: rgba(0, 0, 0, 0);
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
@@ -1405,9 +1406,9 @@
   top: 20px;
   right: 20px;
   max-width: 500px;
-  z-index: 9999;
+  z-index: 10002;
   border-radius: 12px;
-  box-shadow: 
+  box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(102, 192, 244, 0.2),
     0 0 20px rgba(102, 192, 244, 0.2);
@@ -1493,6 +1494,10 @@
 }
 
 /* ========== PATCH NOTES MODAL ========== */
+.patch-notes-modal {
+  z-index: 10001;
+}
+
 .patch-notes-content {
   max-width: 700px;
   max-height: 85vh;

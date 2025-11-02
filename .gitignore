@@ -13,11 +13,8 @@ out/
 *.tar.gz
 *.zip
 
-# Build resources (ignore icons, but track README)
-build/icon.png
-build/icon.ico
-build/icon.icns
-build/*.svg
+# Build resources
+# Note: Icon files are tracked as they're required for builds
 
 # Electron
 .electron-builder
