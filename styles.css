@@ -807,19 +807,20 @@
 
 /* Dropdown menu */
 .scan-dropdown-menu {
-  animation: dropdownSlideIn 0.2s ease;
+  opacity: 1 !important;
+  animation: menuFadeIn 0.2s ease-out;
 }
 
 .scan-dropdown-menu.hidden {
-  display: none;
+  display: none !important;
 }
 
-@keyframes dropdownSlideIn {
-  from {
+@keyframes menuFadeIn {
+  0% {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
