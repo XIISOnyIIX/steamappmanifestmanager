@@ -130,6 +130,10 @@ ipcMain.handle('get-platform', () => {
   return process.platform;
 });
 
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});
+
 ipcMain.handle('open-directory', async (event, dirPath) => {
   try {
     if (!dirPath) {

@@ -422,6 +422,341 @@
     animation: modalEnter 0.4s var(--ease-out-expo);
   }
 
+  /* ========== ABOUT MODAL WITH LIVELY ANIMATIONS ========== */
+  .about-modal-overlay {
+    @apply fixed inset-0 z-50;
+    @apply flex items-center justify-center;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition: all 0.3s var(--ease-out-expo);
+    pointer-events: none;
+  }
+
+  .about-modal-overlay.active {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    pointer-events: auto;
+  }
+
+  .about-modal-content {
+    @apply glass-strong rounded-3xl p-8 max-w-md w-full mx-4;
+    position: relative;
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.4s var(--ease-out-expo);
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(102, 192, 244, 0.2);
+  }
+
+  .about-modal-overlay.active .about-modal-content {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  /* Close button with animations */
+  .about-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    @apply glass p-2 rounded-lg;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #c7d5e0;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out-expo);
+    z-index: 10;
+  }
+
+  .about-modal-close:hover {
+    background: rgba(255, 77, 77, 0.2);
+    border-color: rgba(255, 77, 77, 0.4);
+    color: #ff4d4d;
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+  }
+
+  .about-modal-close:active {
+    transform: scale(0.95) rotate(90deg);
+  }
+
+  /* Logo with gradient background and animation */
+  .about-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+    transition: all 0.5s var(--ease-out-expo) 0.1s;
+  }
+
+  .about-modal-overlay.active .about-logo {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  .about-logo-inner {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(102, 192, 244, 0.2), rgba(139, 197, 63, 0.2));
+    border: 2px solid rgba(102, 192, 244, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s var(--ease-out-expo);
+  }
+
+  .about-logo-inner::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: linear-gradient(
+      45deg,
+      transparent,
+      rgba(102, 192, 244, 0.1),
+      transparent
+    );
+    animation: logoShine 3s ease-in-out infinite;
+  }
+
+  .about-logo-inner:hover {
+    transform: scale(1.05) rotate(5deg);
+    border-color: rgba(102, 192, 244, 0.5);
+    box-shadow: 
+      0 0 30px rgba(102, 192, 244, 0.4),
+      inset 0 0 20px rgba(102, 192, 244, 0.1);
+  }
+
+  /* App title with stagger animation */
+  .about-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #66c0f4, #8bc53f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.5s var(--ease-out-expo) 0.2s;
+  }
+
+  .about-modal-overlay.active .about-title {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Version badge with stagger */
+  .about-version {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 32px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.5s var(--ease-out-expo) 0.3s;
+  }
+
+  .about-modal-overlay.active .about-version {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .about-version-label {
+    font-size: 14px;
+    color: #c7d5e0;
+    font-weight: 500;
+  }
+
+  .about-version-number {
+    @apply badge-glass;
+    background: rgba(102, 192, 244, 0.15);
+    color: #66c0f4;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    border: 1px solid rgba(102, 192, 244, 0.3);
+  }
+
+  /* Action buttons container with stagger */
+  .about-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.5s var(--ease-out-expo) 0.4s;
+  }
+
+  .about-modal-overlay.active .about-buttons {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Button styles with lively hover and press */
+  .about-button {
+    @apply glass rounded-lg px-6 py-3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    border: 1px solid rgba(102, 192, 244, 0.2);
+    background: rgba(102, 192, 244, 0.05);
+    color: white;
+    transition: all 0.3s var(--ease-out-expo);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .about-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      transparent,
+      rgba(102, 192, 244, 0.1),
+      transparent
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+
+  .about-button:hover::before {
+    transform: translateX(100%);
+  }
+
+  .about-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    background: rgba(102, 192, 244, 0.15);
+    border-color: rgba(102, 192, 244, 0.4);
+    box-shadow: 
+      0 8px 20px rgba(102, 192, 244, 0.2),
+      0 0 20px rgba(102, 192, 244, 0.15);
+  }
+
+  .about-button:active {
+    transform: translateY(0) scale(0.98);
+    background: rgba(102, 192, 244, 0.2);
+  }
+
+  .about-button svg {
+    transition: transform 0.3s var(--ease-spring);
+  }
+
+  .about-button:hover svg {
+    transform: scale(1.2) rotate(5deg);
+  }
+
+  .about-button-primary {
+    background: linear-gradient(135deg, rgba(102, 192, 244, 0.1), rgba(139, 197, 63, 0.1));
+    border-color: rgba(102, 192, 244, 0.3);
+  }
+
+  .about-button-primary:hover {
+    background: linear-gradient(135deg, rgba(102, 192, 244, 0.2), rgba(139, 197, 63, 0.2));
+    border-color: rgba(102, 192, 244, 0.5);
+    box-shadow: 
+      0 8px 20px rgba(102, 192, 244, 0.3),
+      0 0 30px rgba(102, 192, 244, 0.2);
+  }
+
+  .about-button-secondary:hover {
+    background: rgba(139, 197, 63, 0.15);
+    border-color: rgba(139, 197, 63, 0.4);
+    box-shadow: 
+      0 8px 20px rgba(139, 197, 63, 0.2),
+      0 0 20px rgba(139, 197, 63, 0.15);
+  }
+
+  /* Credits with stagger and heart animation */
+  .about-credits {
+    text-align: center;
+    font-size: 14px;
+    color: #c7d5e0;
+    padding-top: 20px;
+    border-top: 1px solid rgba(102, 192, 244, 0.1);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.5s var(--ease-out-expo) 0.5s;
+  }
+
+  .about-modal-overlay.active .about-credits {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .about-credits-author {
+    font-weight: 700;
+    background: linear-gradient(135deg, #66c0f4, #8bc53f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Info button specific styles */
+  .info-button {
+    transition: all 0.3s var(--ease-out-expo);
+    position: relative;
+  }
+
+  .info-button:hover {
+    transform: scale(1.15);
+    background: rgba(102, 192, 244, 0.15);
+    border-color: rgba(102, 192, 244, 0.3);
+    box-shadow: 
+      0 0 20px rgba(102, 192, 244, 0.3),
+      0 0 40px rgba(102, 192, 244, 0.15);
+  }
+
+  .info-button:active {
+    transform: scale(0.95);
+  }
+
+  .info-button svg {
+    transition: transform 0.3s var(--ease-spring);
+  }
+
+  .info-button:hover svg {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  /* Tooltip styling for info button */
+  .info-button::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background: rgba(23, 26, 33, 0.95);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s var(--ease-out-expo);
+    border: 1px solid rgba(102, 192, 244, 0.2);
+  }
+
+  .info-button:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+
   /* ========== COLLAPSE/ACCORDION WITH SLIDE ANIMATIONS ========== */
   .collapse-glass {
     @apply glass-dark rounded-lg overflow-hidden;
@@ -696,6 +1031,15 @@
   }
   100% {
     background-position: 1000px 0;
+  }
+}
+
+@keyframes logoShine {
+  0% {
+    transform: translate(-100%, -100%) rotate(45deg);
+  }
+  100% {
+    transform: translate(100%, 100%) rotate(45deg);
   }
 }
 

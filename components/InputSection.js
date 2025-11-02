@@ -69,6 +69,13 @@ class InputSection {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
           </svg>
         </button>
+        
+        <!-- Info/About Button -->
+        <button id="infoButton" class="info-button glass p-2 rounded-lg" style="color: #66c0f4;" title="About">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </button>
       </div>
     `;
 
@@ -80,6 +87,7 @@ class InputSection {
     const scanButton = document.getElementById('scanButton');
     const outputDirButton = document.getElementById('outputDirButton');
     const openOutputDirButton = document.getElementById('openOutputDirButton');
+    const infoButton = document.getElementById('infoButton');
     const scanDropdown = document.getElementById('scanDropdown');
     const scanMenu = document.getElementById('scanMenu');
     const dropdownItem = document.querySelector('.scan-dropdown-menu .dropdown-item');
@@ -162,6 +170,17 @@ class InputSection {
     openOutputDirButton.addEventListener('click', async () => {
       await this.openOutputDirectory();
     });
+
+    // Info/About button
+    if (infoButton) {
+      infoButton.addEventListener('click', () => {
+        if (typeof aboutModal !== 'undefined' && aboutModal.show) {
+          aboutModal.show();
+        } else {
+          console.error('About modal not available');
+        }
+      });
+    }
   }
 
   async handleScan() {

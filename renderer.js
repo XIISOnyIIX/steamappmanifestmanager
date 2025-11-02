@@ -47,6 +47,11 @@ class SteamManifestApp {
         confirmModal.initialize();
       }
       
+      // Initialize about modal
+      if (typeof aboutModal !== 'undefined') {
+        await aboutModal.initialize();
+      }
+      
       // Initialize input section
       if (typeof InputSection !== 'undefined') {
         this.inputSection = new InputSection(
