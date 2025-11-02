@@ -7,7 +7,6 @@ class ConfirmModal {
   initialize() {
     const container = document.getElementById('modalContainer');
     if (!container) {
-      console.warn('Modal container not found');
       return;
     }
 

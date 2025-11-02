@@ -64,12 +64,9 @@ class SteamScanner {
   }
 
   async findLibraryFolders() {
-    console.log('🔍 Detecting Steam library folders...');
-    
     for (const steamPath of this.steamPaths) {
       // Add the main Steam installation path
       this.libraryPaths.push(steamPath);
-      console.log(`✅ Found Steam library: ${steamPath}`);
 
       // Try modern location first: steamapps/libraryfolders.vdf
       let vdfPath = this.joinPath(steamPath, 'steamapps', 'libraryfolders.vdf');
@@ -88,7 +85,6 @@ class SteamScanner {
           
           if (parsed && parsed.libraryfolders) {
             const folders = parsed.libraryfolders;
-            let additionalLibrariesCount = 0;
             
             for (const key in folders) {
               if (key !== 'contentstatsid' && folders[key].path) {
@@ -98,39 +94,21 @@ class SteamScanner {
                 const pathExists = await ipcRenderer.invoke('check-file-exists', libPath);
                 if (pathExists && !this.libraryPaths.includes(libPath)) {
                   this.libraryPaths.push(libPath);
-                  additionalLibrariesCount++;
-                  console.log(`✅ Found additional Steam library: ${libPath}`);
                 }
               }
             }
-            
-            if (additionalLibrariesCount > 0) {
-              console.log(`📚 Total additional libraries found: ${additionalLibrariesCount}`);
-            }
           }
         } catch (error) {
-          console.warn(`⚠️ Failed to parse libraryfolders.vdf: ${error.message}`);
+          console.warn(`Failed to parse libraryfolders.vdf: ${error.message}`);
         }
-      } else {
-        console.warn(`⚠️ libraryfolders.vdf not found at ${vdfPath}`);
       }
     }
-    
-    console.log(`📊 Total Steam libraries detected: ${this.libraryPaths.length}`);
-    console.log('🔍 All library paths:', this.libraryPaths);
   }
 
   async scanManifestsForAppId(appId) {
     try {
-      console.log(`🔎 Scanning manifests for APPID ${appId} across all libraries...`);
       const manifests = [];
       const depotIds = await this.getDepotIdsForAppId(appId);
-      
-      if (depotIds.length === 0) {
-        console.warn(`⚠️ No depot IDs found for APPID ${appId}`);
-      } else {
-        console.log(`📦 Found ${depotIds.length} depot(s) for APPID ${appId}: ${depotIds.join(', ')}`);
-      }
 
       const decryptionKeys = await this.getDecryptionKeys();
 
@@ -139,21 +117,16 @@ class SteamScanner {
         const exists = await ipcRenderer.invoke('check-file-exists', depotCachePath);
         
         if (!exists) {
-          console.log(`⏭️  Skipping ${libraryPath} (no depotcache)`);
           continue;
         }
-
-        console.log(`🔍 Scanning depotcache in: ${libraryPath}`);
 
         try {
           const files = await ipcRenderer.invoke('read-dir', depotCachePath);
           
           if (!Array.isArray(files)) {
-            console.warn(`⚠️ Invalid files list for ${depotCachePath}`);
+            console.warn(`Invalid files list for ${depotCachePath}`);
             continue;
           }
-          
-          let foundInThisLibrary = 0;
           
           for (const file of files) {
             try {
@@ -173,27 +146,21 @@ class SteamScanner {
                       type: 'Base',
                       fullPath,
                     });
-                    foundInThisLibrary++;
                   }
                 }
               }
             } catch (fileError) {
-              console.warn(`⚠️ Error processing file ${file}: ${fileError.message}`);
+              console.warn(`Error processing file ${file}: ${fileError.message}`);
             }
           }
-          
-          if (foundInThisLibrary > 0) {
-            console.log(`✅ Found ${foundInThisLibrary} manifest(s) in ${libraryPath}`);
-          }
         } catch (error) {
-          console.warn(`⚠️ Failed to scan depotcache at ${depotCachePath}: ${error.message}`);
+          console.warn(`Failed to scan depotcache at ${depotCachePath}: ${error.message}`);
         }
       }
 
-      console.log(`✅ Total manifests found for APPID ${appId}: ${manifests.length}`);
       return manifests;
     } catch (error) {
-      console.error('❌ Error scanning manifests:', error);
+      console.error('Error scanning manifests:', error);
       throw new Error(`Failed to scan manifests: ${error.message}`);
     }
   }
@@ -303,22 +270,14 @@ class SteamScanner {
   }
 
   async findAllInstalledGames() {
-    console.log('🎮 Starting scan for all installed games across all libraries...');
-    
     try {
       const installedGames = [];
-      
-      console.log(`📁 Scanning ${this.libraryPaths.length} Steam library location(s):`);
-      this.libraryPaths.forEach((path, index) => {
-        console.log(`  ${index + 1}. ${path}`);
-      });
       
       for (const libraryPath of this.libraryPaths) {
         const steamappsPath = this.joinPath(libraryPath, 'steamapps');
         const exists = await ipcRenderer.invoke('check-file-exists', steamappsPath);
         
         if (!exists) {
-          console.warn(`⚠️ steamapps folder not found in: ${libraryPath}`);
           continue;
         }
 
@@ -326,7 +285,7 @@ class SteamScanner {
           const files = await ipcRenderer.invoke('read-dir', steamappsPath);
           
           if (!Array.isArray(files)) {
-            console.warn(`⚠️ Invalid files list for ${steamappsPath}`);
+            console.warn(`Invalid files list for ${steamappsPath}`);
             continue;
           }
           
@@ -334,8 +293,6 @@ class SteamScanner {
           const manifestFiles = files.filter(f => 
             f && typeof f === 'string' && f.startsWith('appmanifest_') && f.endsWith('.acf')
           );
-          
-          console.log(`🔍 Found ${manifestFiles.length} game manifest(s) in ${libraryPath}`);
           
           // Extract APPID and check if installed
           for (const file of manifestFiles) {
@@ -348,7 +305,6 @@ class SteamScanner {
               
               // FILTER OUT SYSTEM PACKAGES
               if (SYSTEM_APPIDS.has(appIdNum)) {
-                console.log(`⏭️  Skipping system package: ${appId}`);
                 continue;
               }
               
@@ -366,7 +322,6 @@ class SteamScanner {
                 if (appType.toLowerCase() === 'tool' || 
                     appType.toLowerCase() === 'config' ||
                     appType.toLowerCase() === 'application') {
-                  console.log(`⏭️  Skipping tool/utility: ${appId} (${appState.name || 'Unknown'})`);
                   continue;
                 }
                 
@@ -384,18 +339,17 @@ class SteamScanner {
                 }
               }
             } catch (fileError) {
-              console.warn(`⚠️ Error processing manifest file ${file}: ${fileError.message}`);
+              console.warn(`Error processing manifest file ${file}: ${fileError.message}`);
             }
           }
         } catch (error) {
-          console.warn(`⚠️ Failed to scan steamapps at ${steamappsPath}: ${error.message}`);
+          console.warn(`Failed to scan steamapps at ${steamappsPath}: ${error.message}`);
         }
       }
       
-      console.log(`✅ Total installed games found: ${installedGames.length} (system packages filtered)`);
       return installedGames;
     } catch (error) {
-      console.error('❌ Error finding installed games:', error);
+      console.error('Error finding installed games:', error);
       throw new Error(`Failed to find installed games: ${error.message}`);
     }
   }

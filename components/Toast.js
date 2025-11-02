@@ -5,9 +5,6 @@ class ToastManager {
 
   initialize() {
     this.container = document.getElementById('toastContainer');
-    if (!this.container) {
-      console.warn('Toast container not found');
-    }
   }
 
   show(message, type = 'info', duration = 3000) {

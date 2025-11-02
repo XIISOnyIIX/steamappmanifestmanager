@@ -1,26 +1,46 @@
+# Dependencies
 node_modules/
-*.log
-.DS_Store
-.env
-package-lock.json
-yarn.lock
-
-# Tailwind build output
-dist/styles.css
 
 # Build outputs
-dist/*.exe
-dist/*.dmg
-dist/*.AppImage
-dist/*.deb
-dist/*.snap
-dist/*.rpm
-dist/*.tar.gz
-dist/*.zip
-dist/win-unpacked/
-dist/mac/
-dist/linux-unpacked/
-
-# electron-builder
-.electron-builder
+dist/
 build/
+out/
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+*.snap
+*.tar.gz
+*.zip
+
+# Electron
+.electron-builder
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+
+# Temporary
+tmp/
+temp/
+
+# Lock files
+package-lock.json
+yarn.lock
