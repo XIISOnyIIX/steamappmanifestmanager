@@ -759,7 +759,7 @@
   display: inline-flex;
   position: relative;
   gap: 0;
-  overflow: visible !important; /* FORCE VISIBLE - don't cut off dropdown */
+  overflow: visible;
   border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
@@ -805,68 +805,96 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Dropdown menu - NUCLEAR FIX: FORCE EXTREMELY VISIBLE */
+/* ========== DROPDOWN MENU WITH PROPER POSITIONING ========== */
 .scan-dropdown-menu {
-  /* FORCE VISIBLE - no subtlety */
-  background: #ff0000 !important; /* BRIGHT RED */
-  border: 5px solid #00ff00 !important; /* BRIGHT GREEN BORDER */
-  color: #ffffff !important;
-  opacity: 1 !important;
+  /* Position below button */
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
   
-  /* HIGHEST z-index possible */
-  z-index: 999999 !important;
+  /* Size */
+  min-width: 250px;
   
-  /* Force position - use fixed instead of absolute */
-  position: fixed !important;
+  /* Proper glassmorphism styling */
+  background: rgba(10, 14, 39, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(102, 192, 244, 0.2);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(102, 192, 244, 0.1);
   
-  /* Make it big and visible */
-  min-width: 300px !important;
-  padding: 20px !important;
+  /* Stack above everything */
+  z-index: 1000;
   
-  /* Remove any effects that might hide it */
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  filter: none !important;
-  transform: none !important;
-  clip-path: none !important;
+  /* Smooth slide-down + fade-in animation */
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  transition: 
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   
-  /* Force display */
-  display: block !important;
-  visibility: visible !important;
-  
-  /* Add outline for extra visibility */
-  outline: 10px solid red !important;
-  box-shadow: 0 0 50px 20px rgba(255, 0, 0, 0.8) !important;
+  pointer-events: none;
 }
 
+/* When visible */
+.scan-dropdown-menu:not(.hidden) {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* When hidden */
 .scan-dropdown-menu.hidden {
-  display: none !important;
+  display: none;
 }
 
-@keyframes menuFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Make menu items visible too */
+/* ========== DROPDOWN MENU ITEMS ========== */
 .dropdown-item {
-  background: #0000ff !important; /* BRIGHT BLUE */
-  color: #ffffff !important;
-  padding: 20px !important;
-  font-size: 20px !important;
-  border: 2px solid #ffff00 !important; /* BRIGHT YELLOW BORDER */
-  cursor: pointer !important;
-  transition: all 0.3s ease;
-  margin-bottom: 10px !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+  width: 100%;
+  text-align: left;
 }
 
 .dropdown-item:hover {
-  background: #0000cc !important; /* DARKER BLUE on hover */
-  transform: scale(1.05) !important;
+  background: rgba(102, 192, 244, 0.15);
+}
+
+.dropdown-item:active {
+  background: rgba(102, 192, 244, 0.25);
+  transform: scale(0.98);
+}
+
+/* Icon in dropdown */
+.dropdown-item .icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+/* Text container */
+.dropdown-item .text-container {
+  flex: 1;
+}
+
+.dropdown-item .title {
+  font-weight: 500;
+  font-size: 14px;
+  color: white;
+  margin-bottom: 2px;
+}
+
+.dropdown-item .subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
 }
