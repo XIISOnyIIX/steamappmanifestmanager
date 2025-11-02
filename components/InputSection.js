@@ -42,13 +42,13 @@ class InputSection {
           </svg>
         </button>
         
-        <!-- Dropdown Menu -->
-        <div id="scanMenu" class="scan-dropdown-menu glass-strong hidden absolute top-full right-0 mt-2 rounded-lg overflow-hidden min-w-[220px] shadow-xl z-50" style="margin-top: 8px;">
-          <button class="dropdown-item w-full px-4 py-3 text-left transition-colors flex items-center gap-3" style="cursor: pointer;">
-            <span class="text-2xl">📚</span>
-            <div>
-              <div class="font-medium text-white">Scan All Installed Games</div>
-              <div class="text-xs text-slate-400">Find all Steam games</div>
+        <!-- Dropdown Menu - NUCLEAR FIX -->
+        <div id="scanMenu" class="scan-dropdown-menu hidden">
+          <button class="dropdown-item">
+            <span style="font-size: 40px; display: block; text-align: center; margin-bottom: 10px;">📚</span>
+            <div style="text-align: center;">
+              <div style="font-weight: bold; font-size: 24px; margin-bottom: 5px;">Scan All Installed Games</div>
+              <div style="font-size: 16px; opacity: 0.9;">Find all Steam games</div>
             </div>
           </button>
         </div>
@@ -146,6 +146,68 @@ class InputSection {
         if (isHidden) {
           scanDropdown.classList.add('active');
           console.log('  - Added "active" class to dropdown button');
+          
+          // NUCLEAR FIX: Position menu using fixed positioning
+          const btnRect = scanDropdown.getBoundingClientRect();
+          
+          // Position menu below button using fixed positioning
+          scanMenu.style.position = 'fixed';
+          scanMenu.style.top = (btnRect.bottom + 8) + 'px';
+          scanMenu.style.right = (window.innerWidth - btnRect.right) + 'px';
+          scanMenu.style.left = 'auto';
+          
+          // Force extreme visibility (CSS should handle most of this, but be extra sure)
+          scanMenu.style.zIndex = '999999';
+          scanMenu.style.opacity = '1';
+          
+          console.log('  - Menu positioned at:', {
+            position: 'fixed',
+            top: scanMenu.style.top,
+            right: scanMenu.style.right,
+            zIndex: scanMenu.style.zIndex
+          });
+          
+          // Check what's covering the menu after a short delay
+          setTimeout(() => {
+            const rect = scanMenu.getBoundingClientRect();
+            console.log('📍 Menu position:', rect);
+            
+            // Check what elements are at the menu's position
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const elementsAtCenter = document.elementsFromPoint(centerX, centerY);
+            console.log('🔍 Elements at menu center:', elementsAtCenter);
+            
+            // Is menu in the list?
+            const menuIndex = elementsAtCenter.indexOf(scanMenu);
+            if (menuIndex === -1) {
+              console.error('❌ Menu is NOT in elementsFromPoint - something is covering it!');
+              console.error('   Elements at center:', elementsAtCenter.map(el => el.tagName + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className.split(' ').join('.') : '')));
+            } else if (menuIndex > 0) {
+              console.warn('⚠️ Menu is covered by:', elementsAtCenter.slice(0, menuIndex).map(el => el.tagName + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className.split(' ').join('.') : '')));
+            } else {
+              console.log('✅ Menu is on top');
+            }
+            
+            // Check parent overflow issues
+            console.log('🔍 Checking parent overflow...');
+            let parent = scanMenu.parentElement;
+            while (parent && parent !== document.body) {
+              const style = window.getComputedStyle(parent);
+              const overflow = style.overflow;
+              const overflowX = style.overflowX;
+              const overflowY = style.overflowY;
+              
+              if (overflow === 'hidden' || overflowX === 'hidden' || overflowY === 'hidden') {
+                console.warn('⚠️ Parent has overflow:hidden!', parent);
+                console.warn('   This might be cutting off the menu');
+                console.warn('   Parent:', parent.tagName + (parent.id ? '#' + parent.id : '') + (parent.className ? '.' + parent.className.split(' ').join('.') : ''));
+              }
+              
+              parent = parent.parentElement;
+            }
+          }, 100);
         } else {
           scanDropdown.classList.remove('active');
           console.log('  - Removed "active" class from dropdown button');
@@ -227,27 +289,54 @@ class InputSection {
     console.log('=== DROPDOWN DEBUG END ===');
     console.log('✅ All event listeners attached successfully');
     
-    // Add global test function for debugging
+    // Add global test function for debugging - NUCLEAR VERSION
     window.testDropdownMenu = () => {
-      console.log('🧪 TESTING DROPDOWN MENU');
+      console.log('🧪 TESTING DROPDOWN MENU - NUCLEAR VERSION');
       const menu = document.getElementById('scanMenu');
       if (menu) {
-        console.log('Menu found - forcing visible');
+        console.log('Menu found - forcing EXTREME visibility');
         menu.classList.remove('hidden');
-        menu.style.display = 'block';
-        menu.style.position = 'absolute';
-        menu.style.zIndex = '9999';
-        menu.style.background = 'rgba(255, 0, 0, 0.9)';
-        menu.style.color = 'white';
-        menu.style.padding = '20px';
-        menu.style.border = '3px solid yellow';
-        console.log('✅ Menu should now be visible with red background');
+        
+        // Position in center of screen for maximum visibility
+        menu.style.cssText = `
+          position: fixed !important;
+          top: 100px !important;
+          left: 50% !important;
+          transform: translateX(-50%) !important;
+          background: red !important;
+          color: white !important;
+          padding: 50px !important;
+          z-index: 999999 !important;
+          font-size: 30px !important;
+          border: 10px solid yellow !important;
+          opacity: 1 !important;
+          display: block !important;
+          box-shadow: 0 0 100px 50px rgba(255, 0, 0, 0.9) !important;
+        `;
+        
+        menu.innerHTML = '<h1 style="color: white; font-size: 40px; text-align: center;">🚨 CAN YOU SEE THIS??? 🚨</h1><p style="color: white; font-size: 20px; text-align: center; margin-top: 20px;">If you can see this, the dropdown works!</p>';
+        
+        console.log('✅ Menu should now be EXTREMELY visible - huge red box in center of screen');
         console.log('Menu position:', menu.getBoundingClientRect());
+        
+        // Check what's at the menu position
+        const rect = menu.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const elementsAtCenter = document.elementsFromPoint(centerX, centerY);
+        console.log('🔍 Elements at menu center:', elementsAtCenter.map(el => el.tagName + (el.id ? '#' + el.id : '')));
+        
+        if (elementsAtCenter[0] === menu) {
+          console.log('✅✅✅ Menu is ON TOP - visibility confirmed!');
+        } else {
+          console.error('❌ Menu is being covered by:', elementsAtCenter[0]);
+        }
       } else {
         console.error('❌ Menu element does not exist in DOM!');
       }
     };
-    console.log('💡 Test function available: window.testDropdownMenu()');
+    console.log('💡 Nuclear test function available: window.testDropdownMenu()');
+    console.log('💡 Run this in console if dropdown is not visible!');
   }
 
   async handleScan() {

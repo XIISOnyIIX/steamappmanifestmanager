@@ -27,7 +27,7 @@
     min-height: 100vh;
     color: #ffffff;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: auto !important; /* FORCE VISIBLE - allow horizontal scroll if needed */
   }
 
   /* Living background with subtle motion */
@@ -759,7 +759,7 @@
   display: inline-flex;
   position: relative;
   gap: 0;
-  overflow: hidden;
+  overflow: visible !important; /* FORCE VISIBLE - don't cut off dropdown */
   border-radius: 0.5rem;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
@@ -805,10 +805,38 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Dropdown menu */
+/* Dropdown menu - NUCLEAR FIX: FORCE EXTREMELY VISIBLE */
 .scan-dropdown-menu {
+  /* FORCE VISIBLE - no subtlety */
+  background: #ff0000 !important; /* BRIGHT RED */
+  border: 5px solid #00ff00 !important; /* BRIGHT GREEN BORDER */
+  color: #ffffff !important;
   opacity: 1 !important;
-  animation: menuFadeIn 0.2s ease-out;
+  
+  /* HIGHEST z-index possible */
+  z-index: 999999 !important;
+  
+  /* Force position - use fixed instead of absolute */
+  position: fixed !important;
+  
+  /* Make it big and visible */
+  min-width: 300px !important;
+  padding: 20px !important;
+  
+  /* Remove any effects that might hide it */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  transform: none !important;
+  clip-path: none !important;
+  
+  /* Force display */
+  display: block !important;
+  visibility: visible !important;
+  
+  /* Add outline for extra visibility */
+  outline: 10px solid red !important;
+  box-shadow: 0 0 50px 20px rgba(255, 0, 0, 0.8) !important;
 }
 
 .scan-dropdown-menu.hidden {
@@ -826,13 +854,19 @@
   }
 }
 
+/* Make menu items visible too */
 .dropdown-item {
-  border: none;
-  background: transparent;
-  cursor: pointer;
+  background: #0000ff !important; /* BRIGHT BLUE */
+  color: #ffffff !important;
+  padding: 20px !important;
+  font-size: 20px !important;
+  border: 2px solid #ffff00 !important; /* BRIGHT YELLOW BORDER */
+  cursor: pointer !important;
   transition: all 0.3s ease;
+  margin-bottom: 10px !important;
 }
 
 .dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: #0000cc !important; /* DARKER BLUE on hover */
+  transform: scale(1.05) !important;
 }
