@@ -2,7 +2,7 @@
 
 A modern Electron app to scan Steam games and generate Lua manifest scripts with decryption keys.
 
-![Steam Manifest Scanner](https://img.shields.io/badge/version-1.0.0-blue)
+![Steam Manifest Scanner](https://img.shields.io/badge/version-1.0.2-blue)
 ![Electron](https://img.shields.io/badge/electron-30.0-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
